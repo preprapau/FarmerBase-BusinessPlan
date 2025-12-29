@@ -2,7 +2,7 @@
 <html lang="ne">
 <head>
 <meta charset="UTF-8">
-<title>उत्पादन तथा बिक्री योजना</title>
+<title>उत्पादन तथा बिक्री योजना | BP Engine</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
@@ -33,6 +33,18 @@ h1{color:#2e7d32;text-align:center}
   font-size:14px;
 }
 
+/* selector */
+.selector{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-bottom:15px;
+}
+.selector label{
+  font-weight:600;
+  font-size:14px;
+}
+
 /* table */
 table{
   width:100%;
@@ -45,7 +57,7 @@ th,td{
   text-align:center;
 }
 th{background:#eef5ee}
-input{
+input,select{
   width:100%;
   padding:6px;
 }
@@ -76,7 +88,7 @@ button{
 }
 
 @media print{
-  button,.nav{display:none}
+  button,.nav,.selector{display:none}
 }
 </style>
 </head>
@@ -92,25 +104,67 @@ button{
 
 <h1>उत्पादन तथा बिक्री योजना</h1>
 
+<!-- ================= BUSINESS SELECTOR ================= -->
+<div class="selector">
+  <label>
+    व्यवसाय प्रकार (Business Type)
+    <select id="businessType">
+      <option value="animal">पशुपालन (Animal)</option>
+      <option value="crop" disabled>तरकारी / बाली (Crop) – Coming Soon</option>
+      <option value="other" disabled>अन्य व्यवसाय (Other) – Coming Soon</option>
+    </select>
+  </label>
+
+  <label>
+    पशु प्रकार (Animal Type)
+    <select id="animalType">
+      <option value="pig">बंगुर (Pig)</option>
+      <option value="goat" disabled>बाख्रा (Goat) – Coming Soon</option>
+    </select>
+  </label>
+</div>
+
+<!-- ================= INPUT TABLE ================= -->
 <table>
-<tr><th>प्रारम्भिक बयस्क संख्या</th><td><input id="adult" value="300"></td></tr>
-<tr><th>ब्याउने दर (%)</th><td><input id="breedRate" value="90"></td></tr>
-<tr><th>प्रति बयस्क वार्षिक बच्चा</th><td><input id="kids" value="20"></td></tr>
-<tr><th>बच्चा मृत्युदर (%)</th><td><input id="death" value="10"></td></tr>
-<tr><th>भाले अनुपात (%)</th><td><input id="maleRate" value="50"></td></tr>
-<tr><th>राखिने भाले (%)</th><td><input id="keepMale" value="0"></td></tr>
-<tr><th>राखिने पोथी (%)</th><td><input id="keepFemale" value="40"></td></tr>
-<tr><th>प्रतिस्थापन (बयस्क बिक्री %) </th><td><input id="replacement" value="10"></td></tr>
+<tr>
+  <th>प्रारम्भिक बयस्क संख्या<br><small>(Initial Adult Count)</small></th>
+  <td><input id="adult" value="300"></td>
+</tr>
+<tr>
+  <th>ब्याउने दर (%)<br><small>(Breeding Rate)</small></th>
+  <td><input id="breedRate" value="90"></td>
+</tr>
+<tr>
+  <th>प्रति बयस्क वार्षिक बच्चा<br><small>(Offspring / Year)</small></th>
+  <td><input id="kids" value="20"></td>
+</tr>
+<tr>
+  <th>बच्चा मृत्युदर (%)<br><small>(Mortality Rate)</small></th>
+  <td><input id="death" value="10"></td>
+</tr>
+<tr>
+  <th>भाले अनुपात (%)<br><small>(Male Ratio)</small></th>
+  <td><input id="maleRate" value="50"></td>
+</tr>
+<tr>
+  <th>राखिने पोथी (%)<br><small>(Female Retention)</small></th>
+  <td><input id="keepFemale" value="40"></td>
+</tr>
+<tr>
+  <th>प्रतिस्थापन (बयस्क बिक्री %)<br><small>(Adult Replacement Sale)</small></th>
+  <td><input id="replacement" value="10"></td>
+</tr>
 </table>
 
 <button onclick="saveAndCalculate()">💾 Save & Calculate</button>
 
 <div class="note">
-📌 नोट: मृत्युदर कटाएपछि मात्र बिक्री/राखिने गणना हुन्छ।
+📌 नोट: यो पेज उत्पादन (Quantity Planning) का लागि मात्र हो।<br>
+खर्च, बिक्री तथा नतिजा अन्य मोड्युलबाट स्वतः गणना हुन्छ।
 </div>
 
 <h2 style="margin-top:30px;color:#2e7d32;text-align:center">
-५ वर्षे परिणाम (स्वतः गणना)
+५ वर्षे परिणाम (Auto Projection)
 </h2>
 
 <table>
@@ -135,6 +189,7 @@ button{
 
 <div class="footer">
   <strong>Farmer Base BP Engine</strong> – कृषकमैत्री व्यवसायिक योजना यन्त्र<br>
+  गणनामा स्पष्टता, कृषिमा आत्मनिर्भरता<br>
   Concept By : Prem Prasad Paudel, Rasuwa.
 </div>
 
@@ -147,15 +202,18 @@ function num(id){
 
 function saveAndCalculate(){
   const data = {
+    businessType: document.getElementById("businessType").value,
+    animalType: document.getElementById("animalType").value,
+
     adult:num("adult"),
     breedRate:num("breedRate"),
     kids:num("kids"),
     death:num("death"),
     maleRate:num("maleRate"),
-    keepMale:num("keepMale"),
     keepFemale:num("keepFemale"),
     replacement:num("replacement")
   };
+
   localStorage.setItem("productionSalesPlan",JSON.stringify(data));
   calculate(data);
 }
@@ -173,10 +231,9 @@ function calculate(d){
     let male=alive*d.maleRate/100;
     let female=alive-male;
 
-    let keepM=male*d.keepMale/100;
     let keepF=female*d.keepFemale/100;
+    let sellKids=alive-keepF;
 
-    let sellKids=alive-(keepM+keepF);
     let replaceSell=adult*d.replacement/100;
 
     body.innerHTML+=`
@@ -193,7 +250,7 @@ function calculate(d){
   }
 }
 
-// load saved
+/* LOAD SAVED */
 const saved=localStorage.getItem("productionSalesPlan");
 if(saved){
   const d=JSON.parse(saved);
