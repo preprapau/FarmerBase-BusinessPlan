@@ -2,7 +2,7 @@
 <html lang="ne">
 <head>
 <meta charset="UTF-8">
-<title>वार्षिक आम्दानी–खर्च समरी</title>
+<title>वार्षिक आम्दानी तथा खर्च समरी</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
@@ -28,7 +28,7 @@ body{
 }
 .grid{
   display:grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns:1fr 1fr;
   gap:16px;
 }
 .section{
@@ -52,21 +52,11 @@ th,td{
   padding:6px;
   border-bottom:1px dotted #bbb;
 }
-th{
-  text-align:left;
-  font-weight:600;
-}
-td{
-  text-align:right;
-}
+th{text-align:left}
+td{text-align:right}
 .group{
   background:#f1f8f4;
   font-weight:600;
-}
-.net{
-  background:#dcedc8;
-  font-size:16px;
-  font-weight:bold;
 }
 .footer-note{
   text-align:center;
@@ -76,7 +66,6 @@ td{
 }
 @media print{
   .no-print{display:none}
-  body{margin:0}
 }
 </style>
 </head>
@@ -85,15 +74,15 @@ td{
 <div class="page">
 
 <div class="header">
-  <h1>🐷 वार्षिक आम्दानी–खर्च समरी</h1>
+  <h1>🐷 वार्षिक आम्दानी तथा खर्च समरी</h1>
   <div style="font-size:13px;color:#555">
-    उत्पादन, बिक्री तथा खर्चको स्वचालित विश्लेषण (१ वर्ष)
+    (नाफा–घाटा गणना पछि थपिनेछ)
   </div>
 </div>
 
 <div class="grid">
 
-<!-- ================= LEFT COLUMN ================= -->
+<!-- LEFT COLUMN -->
 <div class="section">
 <h2>📈 बिक्री आम्दानी</h2>
 <table>
@@ -101,19 +90,14 @@ td{
 <tr><th>बयस्क बिक्री (प्रतिस्थापन)</th><td id="incAdult"></td></tr>
 <tr class="group"><th>कुल आम्दानी</th><td id="incTotal"></td></tr>
 </table>
-
-<h2 style="margin-top:12px">🧮 वार्षिक नतिजा</h2>
-<table>
-<tr class="net"><th>आम्दानी − खर्च</th><td id="netResult"></td></tr>
-</table>
 </div>
 
-<!-- ================= RIGHT COLUMN ================= -->
+<!-- RIGHT COLUMN -->
 <div class="section">
-<h2>📉 खर्च विवरण (Breakdown)</h2>
+<h2>📉 खर्च विवरण</h2>
 <table>
 <tr class="group">
-<th>खर्च शीर्षक</th>
+<th>खर्च</th>
 <th>बयस्क</th>
 <th>पाठापाठी</th>
 <th>जम्मा</th>
@@ -152,7 +136,7 @@ td{
 </div>
 
 <div class="footer-note">
-📌 सबै गणना उत्पादन, दाना–औषधि तथा बिक्री मोड्युलबाट स्वतः लिइएका हुन् ।
+📌 यो समरी उत्पादन, बिक्री तथा दाना–औषधि मोड्युलबाट स्वतः गणना गरिएको हो ।
 </div>
 
 <div class="no-print" style="text-align:center;margin-top:10px">
@@ -162,80 +146,76 @@ td{
 </div>
 
 <script>
-/* ===== LOAD PRODUCTION ===== */
-const p = JSON.parse(localStorage.getItem("productionSalesPlan")||"{}");
-if(!p.adult){
-  alert("पहिले production.html मा Save & Calculate गर्नुहोस्");
-}
+document.addEventListener("DOMContentLoaded", function(){
 
-/* ===== BASIC COUNTS ===== */
-const adult = p.adult || 0;
-const alive = adult*(p.breedRate/100)*p.kids*((100-p.death)/100);
-const male  = alive*(p.maleRate/100);
-const female= alive-male;
+  const p = JSON.parse(localStorage.getItem("productionSalesPlan") || "{}");
+  if(!p.adult){
+    alert("पहिले production.html मा Save & Calculate गर्नुहोस्");
+    return;
+  }
 
-const keepF = female*(p.keepFemale/100);
-const keepM = male*(p.keepMale/100);
+  /* ===== BASIC COUNTS ===== */
+  const adult = p.adult;
+  const alive = adult * (p.breedRate/100) * p.kids * ((100-p.death)/100);
+  const male  = alive * (p.maleRate/100);
+  const female= alive - male;
+  const keepF = female * (p.keepFemale/100);
+  const keepM = male * (p.keepMale/100);
 
-const sellYoung = alive - keepF - keepM;
-const sellAdult = adult*(p.replacement/100);
+  const sellYoung = alive - keepF - keepM;
+  const sellAdult = adult * (p.replacement/100);
 
-/* ===== SALES ASSUMPTIONS ===== */
-const wYoung = Number(localStorage.getItem("wYoung")||80);
-const wAdult = Number(localStorage.getItem("wAdult")||100);
-const priceKg= Number(localStorage.getItem("priceKg")||450);
+  /* ===== SALES ===== */
+  const wYoung = Number(localStorage.getItem("wYoung") || 80);
+  const wAdult = Number(localStorage.getItem("wAdult") || 100);
+  const priceKg= Number(localStorage.getItem("priceKg")|| 450);
 
-const incYoung = sellYoung*wYoung*priceKg;
-const incAdult = sellAdult*wAdult*priceKg;
-const incTotal = incYoung+incAdult;
+  const incYoung = sellYoung * wYoung * priceKg;
+  const incAdult = sellAdult * wAdult * priceKg;
+  const incTotal = incYoung + incAdult;
 
-/* ===== EXPENSE ASSUMPTIONS ===== */
-const feedPrice = Number(localStorage.getItem("feedPrice")||55);
+  /* ===== EXPENSE ===== */
+  const feedPrice = Number(localStorage.getItem("feedPrice") || 55);
 
-// Feed
-const feedAdult = adult * 3 * 365 * feedPrice;
-const feedYoung = alive * ((1.5*150)+(2*90)+(3*125)) * feedPrice;
-const feedTotal = feedAdult + feedYoung;
+  const feedAdult = adult * 3 * 365 * feedPrice;
+  const feedYoung = alive * ((1.5*150)+(2*90)+(3*125)) * feedPrice;
+  const feedTotal = feedAdult + feedYoung;
 
-// Vitamin
-const vitAdult = adult * 5 * 365;
-const vitYoung = alive * 8 * 365;
-const vitTotal = vitAdult + vitYoung;
+  const vitAdult = adult * 5 * 365;
+  const vitYoung = alive * 8 * 365;
+  const vitTotal = vitAdult + vitYoung;
 
-// Medicine
-const medAdult = adult * 1500;
-const medYoung = alive * 2500;
-const medTotal = medAdult + medYoung;
+  const medAdult = adult * 1500;
+  const medYoung = alive * 2500;
+  const medTotal = medAdult + medYoung;
 
-// Expense totals
-const expAdult = feedAdult + vitAdult + medAdult;
-const expYoung = feedYoung + vitYoung + medYoung;
-const expTotal = expAdult + expYoung;
+  const expAdult = feedAdult + vitAdult + medAdult;
+  const expYoung = feedYoung + vitYoung + medYoung;
+  const expTotal = expAdult + expYoung;
 
-/* ===== DISPLAY ===== */
-const ru=v=>"रु "+Math.round(v).toLocaleString();
+  const ru = v => "रु " + Math.round(v).toLocaleString();
 
-incYoung.textContent = ru(incYoung);
-incAdult.textContent = ru(incAdult);
-incTotal.textContent = ru(incTotal);
+  document.getElementById("incYoung").textContent = ru(incYoung);
+  document.getElementById("incAdult").textContent = ru(incAdult);
+  document.getElementById("incTotal").textContent = ru(incTotal);
 
-feedAdult.textContent = ru(feedAdult);
-feedYoung.textContent = ru(feedYoung);
-feedTotal.textContent = ru(feedTotal);
+  document.getElementById("feedAdult").textContent = ru(feedAdult);
+  document.getElementById("feedYoung").textContent = ru(feedYoung);
+  document.getElementById("feedTotal").textContent = ru(feedTotal);
 
-vitAdult.textContent = ru(vitAdult);
-vitYoung.textContent = ru(vitYoung);
-vitTotal.textContent = ru(vitTotal);
+  document.getElementById("vitAdult").textContent = ru(vitAdult);
+  document.getElementById("vitYoung").textContent = ru(vitYoung);
+  document.getElementById("vitTotal").textContent = ru(vitTotal);
 
-medAdult.textContent = ru(medAdult);
-medYoung.textContent = ru(medYoung);
-medTotal.textContent = ru(medTotal);
+  document.getElementById("medAdult").textContent = ru(medAdult);
+  document.getElementById("medYoung").textContent = ru(medYoung);
+  document.getElementById("medTotal").textContent = ru(medTotal);
 
-expAdult.textContent = ru(expAdult);
-expYoung.textContent = ru(expYoung);
-expTotal.textContent = ru(expTotal);
+  document.getElementById("expAdult").textContent = ru(expAdult);
+  document.getElementById("expYoung").textContent = ru(expYoung);
+  document.getElementById("expTotal").textContent = ru(expTotal);
 
-netResult.textContent = ru(incTotal-expTotal);
+});
 </script>
 
 </body>
