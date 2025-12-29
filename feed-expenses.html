@@ -2,7 +2,7 @@
 <html lang="ne">
 <head>
 <meta charset="UTF-8">
-<title>दाना तथा औषधि वार्षिक खर्च</title>
+<title>दाना तथा औषधि खर्च (प्रतिदिन आधार)</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
@@ -12,7 +12,7 @@ body{
   margin:0;
 }
 .container{
-  max-width:900px;
+  max-width:950px;
   margin:20px auto;
   background:#fff;
   padding:25px;
@@ -57,44 +57,22 @@ button{
 <body>
 <div class="container">
 
-<h1>🐷 दाना तथा औषधि वार्षिक खर्च</h1>
+<h1>🐷 दाना खर्च (प्रतिदिन–प्रतिजनावर)</h1>
 
 <table>
 <tr><th colspan="2">जनावर संख्या</th></tr>
-<tr>
-  <td>बयस्क संख्या</td>
-  <td><input id="adultCount"></td>
-</tr>
-<tr>
-  <td>पाठापाठी (वार्षिक औसत)</td>
-  <td><input id="youngCount"></td>
-</tr>
+<tr><td>बयस्क (माउ)</td><td><input id="adultCount"></td></tr>
+<tr><td>पाठापाठी (वार्षिक)</td><td><input id="youngCount"></td></tr>
 
-<tr><th colspan="2">प्रति जनावर वार्षिक दाना खर्च (रु)</th></tr>
-<tr>
-  <td>बयस्क</td>
-  <td><input id="adultFeed" value="18000"></td>
-</tr>
-<tr>
-  <td>पाठापाठी</td>
-  <td><input id="youngFeed" value="12000"></td>
-</tr>
-
-<tr><th colspan="2">प्रति जनावर वार्षिक औषधि खर्च (रु)</th></tr>
-<tr>
-  <td>बयस्क</td>
-  <td><input id="adultMed" value="1500"></td>
-</tr>
-<tr>
-  <td>पाठापाठी</td>
-  <td><input id="youngMed" value="2500"></td>
-</tr>
+<tr><th colspan="2">दाना मूल्य</th></tr>
+<tr><td>दाना मूल्य (रु / केजी)</td><td><input id="feedPrice" value="55"></td></tr>
 </table>
 
-<button onclick="calculate()">📊 Calculate Annual Expense</button>
+<button onclick="calculate()">📊 Calculate Feed Cost</button>
 
 <div class="note">
-📌 जनावर संख्या production.html बाट स्वतः लोड हुन्छ (manual edit सम्भव)
+📌 Feeding Logic:
+बयस्क = 3kg/day | पाठापाठी: 0–5m = 1.5kg, 5–8m = 2kg, 9–12m = 3kg
 </div>
 
 <div id="result"></div>
@@ -106,11 +84,10 @@ function n(id){
   return parseFloat(document.getElementById(id).value) || 0;
 }
 
-// Auto load from production.html (read-only)
+/* Auto load from production.html (READ ONLY) */
 const saved = localStorage.getItem("productionSalesPlan");
 if(saved){
   const d = JSON.parse(saved);
-
   const adult = d.adult || 0;
   const alive =
     adult *
@@ -125,31 +102,47 @@ if(saved){
 function calculate(){
   const adultCount = n("adultCount");
   const youngCount = n("youngCount");
+  const price = n("feedPrice");
 
-  const adultFeedCost = adultCount * n("adultFeed");
-  const youngFeedCost = youngCount * n("youngFeed");
+  /* Adult Feed */
+  const adultKg = 3 * 365;
+  const adultFeedCost = adultCount * adultKg * price;
 
-  const adultMedCost = adultCount * n("adultMed");
-  const youngMedCost = youngCount * n("youngMed");
+  /* Young Feed (stage wise) */
+  const youngKgPerAnimal =
+      (1.5 * 150) +
+      (2.0 * 90) +
+      (3.0 * 125);
+
+  const youngFeedCost =
+      youngCount * youngKgPerAnimal * price;
 
   const totalFeed = adultFeedCost + youngFeedCost;
-  const totalMed = adultMedCost + youngMedCost;
-  const grand = totalFeed + totalMed;
 
   document.getElementById("result").innerHTML = `
-    <h3 style="margin-top:25px;color:#2e7d32">📌 वार्षिक खर्च सारांश</h3>
+    <h3 style="margin-top:25px;color:#2e7d32">📌 वार्षिक दाना खर्च विवरण</h3>
     <table>
-      <tr><td>बयस्क दाना</td><td>रु ${adultFeedCost.toLocaleString()}</td></tr>
-      <tr><td>पाठापाठी दाना</td><td>रु ${youngFeedCost.toLocaleString()}</td></tr>
-      <tr><th>कुल दाना</th><th>रु ${totalFeed.toLocaleString()}</th></tr>
+      <tr>
+        <td>बयस्क दाना (kg/वर्ष)</td>
+        <td>${(adultCount * adultKg).toLocaleString()}</td>
+      </tr>
+      <tr>
+        <td>बयस्क दाना खर्च</td>
+        <td>रु ${adultFeedCost.toLocaleString()}</td>
+      </tr>
 
-      <tr><td>बयस्क औषधि</td><td>रु ${adultMedCost.toLocaleString()}</td></tr>
-      <tr><td>पाठापाठी औषधि</td><td>रु ${youngMedCost.toLocaleString()}</td></tr>
-      <tr><th>कुल औषधि</th><th>रु ${totalMed.toLocaleString()}</th></tr>
+      <tr>
+        <td>पाठापाठी दाना (kg/वर्ष)</td>
+        <td>${(youngCount * youngKgPerAnimal).toLocaleString()}</td>
+      </tr>
+      <tr>
+        <td>पाठापाठी दाना खर्च</td>
+        <td>रु ${youngFeedCost.toLocaleString()}</td>
+      </tr>
 
       <tr style="background:#dcedc8">
-        <th>🔰 कुल वार्षिक खर्च</th>
-        <th>रु ${grand.toLocaleString()}</th>
+        <th>🔰 कुल वार्षिक दाना खर्च</th>
+        <th>रु ${totalFeed.toLocaleString()}</th>
       </tr>
     </table>
   `;
