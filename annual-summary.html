@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ne">
+<head>
+<meta charset="UTF-8">
+<title>वार्षिक आम्दानी–खर्च समरी</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body{
+  font-family:"Noto Sans Devanagari","Kalimati",system-ui;
+  background:#f4f7f6;
+  margin:0;
+}
+.container{
+  max-width:900px;
+  margin:20px auto;
+  background:#fff;
+  padding:25px;
+  border-radius:8px;
+}
+h1,h2{
+  text-align:center;
+  color:#2e7d32;
+  margin:10px 0;
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:10px;
+}
+th,td{
+  border:1px solid #999;
+  padding:6px;
+  text-align:right;
+}
+th:first-child, td:first-child{
+  text-align:left;
+}
+th{
+  background:#eef5ee;
+}
+.summary{
+  background:#f1f8f4;
+}
+.print-note{
+  font-size:12px;
+  color:#555;
+  margin-top:10px;
+  text-align:center;
+}
+@media print{
+  body{background:#fff}
+  .no-print{display:none}
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<h1>🐷 वार्षिक आम्दानी–खर्च समरी</h1>
+
+<!-- ================= INCOME ================= -->
+<h2>१) बिक्री आम्दानी</h2>
+<table>
+<tr><th>स्रोत</th><th>रकम (रु)</th></tr>
+<tr><td>पाठापाठी बिक्री (९–१२ महिना)</td><td id="incYoung">–</td></tr>
+<tr><td>बयस्क बिक्री (प्रतिस्थापन)</td><td id="incAdult">–</td></tr>
+<tr class="summary"><th>कुल आम्दानी</th><th id="incTotal">–</th></tr>
+</table>
+
+<!-- ================= EXPENSE ================= -->
+<h2>२) वार्षिक खर्च</h2>
+<table>
+<tr><th>खर्च शीर्षक</th><th>रकम (रु)</th></tr>
+<tr><td>दाना खर्च</td><td id="expFeed">–</td></tr>
+<tr><td>भिटामिन खर्च</td><td id="expVit">–</td></tr>
+<tr><td>औषधि खर्च</td><td id="expMed">–</td></tr>
+<tr class="summary"><th>कुल खर्च</th><th id="expTotal">–</th></tr>
+</table>
+
+<!-- ================= NET ================= -->
+<h2>३) वार्षिक नतिजा</h2>
+<table>
+<tr class="summary">
+  <th>कुल आम्दानी − कुल खर्च</th>
+  <th id="netResult">–</th>
+</tr>
+</table>
+
+<div class="print-note">
+📌 यो समरी उत्पादन, बिक्री तथा खर्च मोड्युलबाट स्वतः गणना गरिएको हो।  
+<br>Static HTML | Auto-calculated | Print-Friendly
+</div>
+
+<div class="no-print" style="text-align:center;margin-top:15px">
+<button onclick="window.print()">🖨️ Print / Save PDF</button>
+</div>
+
+</div>
+
+<script>
+/* ===== LOAD DATA ===== */
+const prod = JSON.parse(localStorage.getItem("productionSalesPlan")||"{}");
+const sales = JSON.parse(localStorage.getItem("salesIncomeData")||"{}");
+const feed  = JSON.parse(localStorage.getItem("feedExpenseData")||"{}");
+
+/* ===== BASIC CHECK ===== */
+if(!prod.adult){
+  alert("पहिले production, feed-expenses र sales-income calculate गर्नुहोस्");
+}
+
+/* ===== CALCULATE INCOME ===== */
+const adult = prod.adult || 0;
+const alive = adult*(prod.breedRate/100)*prod.kids*((100-prod.death)/100);
+const male = alive*(prod.maleRate/100);
+const female = alive-male;
+
+const keepF = female*(prod.keepFemale/100);
+const keepM = male*(prod.keepMale/100);
+
+const sellYoung = alive - keepF - keepM;
+const sellAdult = adult*(prod.replacement/100);
+
+const wYoung = Number(sales?.weights?.youngKg || 80);
+const wAdult = Number(sales?.weights?.adultKg || 100);
+const priceKg= Number(sales?.weights?.priceKg || 450);
+
+const incYoung = sellYoung*wYoung*priceKg;
+const incAdult = sellAdult*wAdult*priceKg;
+const incTotal = incYoung+incAdult;
+
+/* ===== CALCULATE EXPENSE ===== */
+const feedCost = Number(feed.feedTotal || 0);
+const vitCost  = Number(feed.vitTotal || 0);
+const medCost  = Number(feed.medTotal || 0);
+const expTotal = feedCost+vitCost+medCost;
+
+/* ===== DISPLAY ===== */
+function ru(v){return "रु "+Math.round(v).toLocaleString();}
+
+incYoungEl.textContent = ru(incYoung);
+incAdultEl.textContent = ru(incAdult);
+incTotalEl.textContent = ru(incTotal);
+
+expFeedEl.textContent = ru(feedCost);
+expVitEl.textContent  = ru(vitCost);
+expMedEl.textContent  = ru(medCost);
+expTotalEl.textContent= ru(expTotal);
+
+netResult.textContent = ru(incTotal-expTotal);
+
+/* ===== MAP IDS ===== */
+function map(){
+  window.incYoungEl = document.getElementById("incYoung");
+  window.incAdultEl = document.getElementById("incAdult");
+  window.incTotalEl = document.getElementById("incTotal");
+  window.expFeedEl  = document.getElementById("expFeed");
+  window.expVitEl   = document.getElementById("expVit");
+  window.expMedEl   = document.getElementById("expMed");
+  window.expTotalEl = document.getElementById("expTotal");
+}
+map();
+</script>
+
+</body>
+</html>
