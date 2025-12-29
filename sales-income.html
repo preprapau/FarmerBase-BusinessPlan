@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <title>बिक्री आम्दानी (Multi-Product)</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
 <style>
 body{font-family:"Noto Sans Devanagari","Kalimati",system-ui;background:#f4f7f6}
 .container{max-width:1200px;margin:20px auto;background:#fff;padding:25px;border-radius:10px}
@@ -12,7 +13,9 @@ table{width:100%;border-collapse:collapse;margin-top:10px}
 th,td{border:1px solid #ccc;padding:6px;text-align:center}
 th{background:#eef5ee}
 input{width:100%;padding:5px}
-button{margin-top:10px;padding:8px 14px;background:#2e7d32;color:#fff;border:none;border-radius:5px}
+button{padding:6px 10px;background:#2e7d32;color:#fff;border:none;border-radius:4px;cursor:pointer}
+.btn-del{background:#c62828}
+.btn-edit{background:#1565c0}
 a{text-decoration:none;color:#2e7d32}
 @media print{button,a{display:none}}
 </style>
@@ -26,14 +29,9 @@ a{text-decoration:none;color:#2e7d32}
 
 <!-- ================= AUTO PRODUCTS ================= -->
 <h2>🔄 अटोमेटिक बिक्री (Production बाट)</h2>
-
 <table>
 <tr>
-<th>Product</th>
-<th>संख्या</th>
-<th>औसत तौल (kg)</th>
-<th>रु / kg</th>
-<th>आम्दानी (रु)</th>
+<th>Product</th><th>संख्या</th><th>औसत तौल (kg)</th><th>रु / kg</th><th>आम्दानी</th>
 </tr>
 <tr>
 <td>पाठापाठी (९–१२ महिना)</td>
@@ -51,13 +49,13 @@ a{text-decoration:none;color:#2e7d32}
 </table>
 
 <!-- ================= MANUAL PRODUCTS ================= -->
-<h2>➕ अन्य बिक्री (Manual Product)</h2>
+<h2>➕ Other / Manual Products</h2>
 
 <table id="manualTable">
 <tr>
 <th>Product Name</th>
-<th>Quantity</th>
-<th>Avg Weight (kg)</th>
+<th>Qty</th>
+<th>Avg kg</th>
 <th>रु / kg</th>
 <th>Action</th>
 </tr>
@@ -68,20 +66,19 @@ a{text-decoration:none;color:#2e7d32}
 
 <h2>📌 कुल बिक्री आम्दानी</h2>
 <table>
-<tr>
-<th>Total Sales Income</th>
-<th id="grandTotal">–</th>
-</tr>
+<tr><th>Total Income</th><th id="grandTotal">–</th></tr>
 </table>
 
 </div>
 
 <script>
-const prod = JSON.parse(localStorage.getItem("productionSalesPlan") || "{}");
-let manualProducts = [];
+const prod = JSON.parse(localStorage.getItem("productionSalesPlan")||"{}");
+let products = [];
+let pid = 0;
 
 function n(v){ return parseFloat(v)||0; }
 
+/* ===== Load Auto Products ===== */
 function loadAuto(){
   if(!prod.adult) return;
 
@@ -93,51 +90,83 @@ function loadAuto(){
   const keepF = female*(prod.keepFemale/100);
   const keepM = male*(prod.keepMale/100);
 
-  document.getElementById("autoYoungQty").innerText =
-    Math.round(alive - keepF - keepM);
-
-  document.getElementById("autoAdultQty").innerText =
-    Math.round(adult*(prod.replacement/100));
+  autoYoungQty.innerText = Math.round(alive - keepF - keepM);
+  autoAdultQty.innerText = Math.round(adult*(prod.replacement/100));
 }
 
+/* ===== Manual Product CRUD ===== */
 function addProduct(){
-  const id = manualProducts.length;
-  manualProducts.push(id);
+  const p = {id:pid++, name:"", qty:0, kg:0, price:0, edit:true};
+  products.push(p);
+  renderProducts();
+}
 
-  manualTable.innerHTML += `
-  <tr id="row${id}">
-    <td><input placeholder="Product name"></td>
-    <td><input type="number" value="0"></td>
-    <td><input type="number" value="0"></td>
-    <td><input type="number" value="0"></td>
-    <td><button onclick="removeProduct(${id})">❌</button></td>
+function editProduct(id){
+  products.find(p=>p.id===id).edit = true;
+  renderProducts();
+}
+
+function saveProduct(id){
+  const r = document.getElementById("row"+id);
+  const p = products.find(p=>p.id===id);
+
+  p.name  = r.cells[0].children[0].value;
+  p.qty   = n(r.cells[1].children[0].value);
+  p.kg    = n(r.cells[2].children[0].value);
+  p.price = n(r.cells[3].children[0].value);
+  p.edit  = false;
+
+  renderProducts();
+}
+
+function deleteProduct(id){
+  products = products.filter(p=>p.id!==id);
+  renderProducts();
+}
+
+/* ===== Render Manual Table ===== */
+function renderProducts(){
+  manualTable.innerHTML = `
+  <tr>
+    <th>Product Name</th><th>Qty</th><th>Avg kg</th><th>रु / kg</th><th>Action</th>
   </tr>`;
+
+  products.forEach(p=>{
+    manualTable.innerHTML += `
+    <tr id="row${p.id}">
+      <td>${p.edit?`<input value="${p.name}">`:p.name}</td>
+      <td>${p.edit?`<input value="${p.qty}">`:p.qty}</td>
+      <td>${p.edit?`<input value="${p.kg}">`:p.kg}</td>
+      <td>${p.edit?`<input value="${p.price}">`:p.price}</td>
+      <td>
+        ${p.edit
+          ? `<button onclick="saveProduct(${p.id})">💾</button>`
+          : `<button class="btn-edit" onclick="editProduct(${p.id})">✏️</button>`
+        }
+        <button class="btn-del" onclick="deleteProduct(${p.id})">❌</button>
+      </td>
+    </tr>`;
+  });
 }
 
-function removeProduct(id){
-  document.getElementById("row"+id)?.remove();
-}
-
+/* ===== Calculate Sales ===== */
 function calculate(){
   let total = 0;
   const price = n(priceKg.value);
 
-  const youngQty = n(autoYoungQty.innerText);
-  const adultQty = n(autoAdultQty.innerText);
+  const yq = n(autoYoungQty.innerText);
+  const aq = n(autoAdultQty.innerText);
 
-  const incomeYoung = youngQty * n(wYoung.value) * price;
-  const incomeAdult = adultQty * n(wAdult.value) * price;
+  const iy = yq*n(wYoung.value)*price;
+  const ia = aq*n(wAdult.value)*price;
 
-  incomeYoung.innerText = incomeYoung.toLocaleString();
-  incomeAdult.innerText = incomeAdult.toLocaleString();
+  incomeYoung.innerText = iy.toLocaleString();
+  incomeAdult.innerText = ia.toLocaleString();
 
-  total += incomeYoung + incomeAdult;
+  total += iy + ia;
 
-  [...manualTable.rows].slice(1).forEach(r=>{
-    const qty = n(r.cells[1].children[0].value);
-    const wt  = n(r.cells[2].children[0].value);
-    const pr  = n(r.cells[3].children[0].value);
-    total += qty * wt * pr;
+  products.forEach(p=>{
+    total += p.qty*p.kg*p.price;
   });
 
   grandTotal.innerText = "रु " + total.toLocaleString();
