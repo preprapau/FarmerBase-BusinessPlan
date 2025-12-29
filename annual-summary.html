@@ -6,71 +6,181 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
-body{font-family:"Noto Sans Devanagari","Kalimati",system-ui;background:#fff}
-.container{max-width:900px;margin:20px auto}
-h1,h2{text-align:center;color:#2e7d32}
-table{width:100%;border-collapse:collapse;margin-top:10px}
-th,td{border:1px solid #666;padding:6px}
-th{background:#eef5ee}
-.right{text-align:right}
-.summary{background:#f1f8f4;font-weight:bold}
-@media print{.no-print{display:none}}
+body{
+  font-family:"Noto Sans Devanagari","Kalimati",system-ui;
+  background:#fff;
+  margin:0;
+}
+.page{
+  max-width:1100px;
+  margin:20px auto;
+  padding:20px;
+}
+.header{
+  text-align:center;
+  border-bottom:2px solid #2e7d32;
+  padding-bottom:8px;
+  margin-bottom:12px;
+}
+.header h1{
+  color:#2e7d32;
+  margin:0;
+}
+.grid{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:16px;
+}
+.section{
+  border:1px solid #ccc;
+  border-radius:8px;
+  padding:12px;
+}
+.section h2{
+  margin:0 0 6px 0;
+  color:#2e7d32;
+  font-size:17px;
+  border-bottom:1px solid #ddd;
+  padding-bottom:4px;
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:14px;
+}
+th,td{
+  padding:6px;
+  border-bottom:1px dotted #bbb;
+}
+th{
+  text-align:left;
+  font-weight:600;
+}
+td{
+  text-align:right;
+}
+.group{
+  background:#f1f8f4;
+  font-weight:600;
+}
+.net{
+  background:#dcedc8;
+  font-size:16px;
+  font-weight:bold;
+}
+.footer-note{
+  text-align:center;
+  font-size:12px;
+  color:#555;
+  margin-top:10px;
+}
+@media print{
+  .no-print{display:none}
+  body{margin:0}
+}
 </style>
 </head>
 
 <body>
-<div class="container">
+<div class="page">
 
-<h1>🐷 वार्षिक आम्दानी–खर्च समरी</h1>
+<div class="header">
+  <h1>🐷 वार्षिक आम्दानी–खर्च समरी</h1>
+  <div style="font-size:13px;color:#555">
+    उत्पादन, बिक्री तथा खर्चको स्वचालित विश्लेषण (१ वर्ष)
+  </div>
+</div>
 
-<h2>१) बिक्री आम्दानी</h2>
+<div class="grid">
+
+<!-- ================= LEFT COLUMN ================= -->
+<div class="section">
+<h2>📈 बिक्री आम्दानी</h2>
 <table>
-<tr><th>स्रोत</th><th class="right">रकम (रु)</th></tr>
-<tr><td>पाठापाठी बिक्री (९–१२ महिना)</td><td id="incYoung" class="right"></td></tr>
-<tr><td>बयस्क बिक्री (प्रतिस्थापन)</td><td id="incAdult" class="right"></td></tr>
-<tr class="summary"><td>कुल आम्दानी</td><td id="incTotal" class="right"></td></tr>
+<tr><th>पाठापाठी बिक्री (९–१२ महिना)</th><td id="incYoung"></td></tr>
+<tr><th>बयस्क बिक्री (प्रतिस्थापन)</th><td id="incAdult"></td></tr>
+<tr class="group"><th>कुल आम्दानी</th><td id="incTotal"></td></tr>
 </table>
 
-<h2>२) वार्षिक खर्च</h2>
+<h2 style="margin-top:12px">🧮 वार्षिक नतिजा</h2>
 <table>
-<tr><th>खर्च शीर्षक</th><th class="right">रकम (रु)</th></tr>
-<tr><td>दाना खर्च</td><td id="expFeed" class="right"></td></tr>
-<tr><td>भिटामिन खर्च</td><td id="expVit" class="right"></td></tr>
-<tr><td>औषधि खर्च</td><td id="expMed" class="right"></td></tr>
-<tr class="summary"><td>कुल खर्च</td><td id="expTotal" class="right"></td></tr>
+<tr class="net"><th>आम्दानी − खर्च</th><td id="netResult"></td></tr>
 </table>
+</div>
 
-<h2>३) वार्षिक नतिजा</h2>
+<!-- ================= RIGHT COLUMN ================= -->
+<div class="section">
+<h2>📉 खर्च विवरण (Breakdown)</h2>
 <table>
-<tr class="summary">
-<td>कुल आम्दानी − कुल खर्च</td>
-<td id="net" class="right"></td>
+<tr class="group">
+<th>खर्च शीर्षक</th>
+<th>बयस्क</th>
+<th>पाठापाठी</th>
+<th>जम्मा</th>
+</tr>
+
+<tr>
+<th>दाना</th>
+<td id="feedAdult"></td>
+<td id="feedYoung"></td>
+<td id="feedTotal"></td>
+</tr>
+
+<tr>
+<th>भिटामिन</th>
+<td id="vitAdult"></td>
+<td id="vitYoung"></td>
+<td id="vitTotal"></td>
+</tr>
+
+<tr>
+<th>औषधि</th>
+<td id="medAdult"></td>
+<td id="medYoung"></td>
+<td id="medTotal"></td>
+</tr>
+
+<tr class="group">
+<th>कुल खर्च</th>
+<td id="expAdult"></td>
+<td id="expYoung"></td>
+<td id="expTotal"></td>
 </tr>
 </table>
+</div>
 
-<div class="no-print" style="text-align:center;margin-top:15px">
+</div>
+
+<div class="footer-note">
+📌 सबै गणना उत्पादन, दाना–औषधि तथा बिक्री मोड्युलबाट स्वतः लिइएका हुन् ।
+</div>
+
+<div class="no-print" style="text-align:center;margin-top:10px">
 <button onclick="window.print()">🖨️ Print / Save PDF</button>
 </div>
 
 </div>
 
 <script>
-/* ================== LOAD PRODUCTION ================== */
+/* ===== LOAD PRODUCTION ===== */
 const p = JSON.parse(localStorage.getItem("productionSalesPlan")||"{}");
-if(!p.adult){ alert("पहिले production.html मा Save & Calculate गर्नुहोस्"); }
+if(!p.adult){
+  alert("पहिले production.html मा Save & Calculate गर्नुहोस्");
+}
 
-/* ================== COMMON ================== */
+/* ===== BASIC COUNTS ===== */
 const adult = p.adult || 0;
 const alive = adult*(p.breedRate/100)*p.kids*((100-p.death)/100);
 const male  = alive*(p.maleRate/100);
 const female= alive-male;
+
 const keepF = female*(p.keepFemale/100);
 const keepM = male*(p.keepMale/100);
 
 const sellYoung = alive - keepF - keepM;
 const sellAdult = adult*(p.replacement/100);
 
-/* ================== SALES (EDITABLE DEFAULTS) ================== */
+/* ===== SALES ASSUMPTIONS ===== */
 const wYoung = Number(localStorage.getItem("wYoung")||80);
 const wAdult = Number(localStorage.getItem("wAdult")||100);
 const priceKg= Number(localStorage.getItem("priceKg")||450);
@@ -79,47 +189,53 @@ const incYoung = sellYoung*wYoung*priceKg;
 const incAdult = sellAdult*wAdult*priceKg;
 const incTotal = incYoung+incAdult;
 
-/* ================== EXPENSE (SAME LOGIC AS feed-expenses) ================== */
+/* ===== EXPENSE ASSUMPTIONS ===== */
 const feedPrice = Number(localStorage.getItem("feedPrice")||55);
 
-// feed
-const adultFeed = adult*3*365*feedPrice;
-const youngFeed = alive*((1.5*150)+(2*90)+(3*125))*feedPrice;
-const feedTotal = adultFeed+youngFeed;
+// Feed
+const feedAdult = adult * 3 * 365 * feedPrice;
+const feedYoung = alive * ((1.5*150)+(2*90)+(3*125)) * feedPrice;
+const feedTotal = feedAdult + feedYoung;
 
-// vitamin
-const vitTotal = (adult*5 + alive*8)*365;
+// Vitamin
+const vitAdult = adult * 5 * 365;
+const vitYoung = alive * 8 * 365;
+const vitTotal = vitAdult + vitYoung;
 
-// medicine
-const medTotal = adult*1500 + alive*2500;
+// Medicine
+const medAdult = adult * 1500;
+const medYoung = alive * 2500;
+const medTotal = medAdult + medYoung;
 
-const expTotal = feedTotal+vitTotal+medTotal;
+// Expense totals
+const expAdult = feedAdult + vitAdult + medAdult;
+const expYoung = feedYoung + vitYoung + medYoung;
+const expTotal = expAdult + expYoung;
 
-/* ================== DISPLAY ================== */
+/* ===== DISPLAY ===== */
 const ru=v=>"रु "+Math.round(v).toLocaleString();
-incYoungEl.textContent=ru(incYoung);
-incAdultEl.textContent=ru(incAdult);
-incTotalEl.textContent=ru(incTotal);
 
-expFeedEl.textContent=ru(feedTotal);
-expVitEl.textContent =ru(vitTotal);
-expMedEl.textContent =ru(medTotal);
-expTotalEl.textContent=ru(expTotal);
+incYoung.textContent = ru(incYoung);
+incAdult.textContent = ru(incAdult);
+incTotal.textContent = ru(incTotal);
 
-net.textContent=ru(incTotal-expTotal);
+feedAdult.textContent = ru(feedAdult);
+feedYoung.textContent = ru(feedYoung);
+feedTotal.textContent = ru(feedTotal);
 
-/* map */
-function map(){
-  incYoungEl=document.getElementById("incYoung");
-  incAdultEl=document.getElementById("incAdult");
-  incTotalEl=document.getElementById("incTotal");
-  expFeedEl=document.getElementById("expFeed");
-  expVitEl=document.getElementById("expVit");
-  expMedEl=document.getElementById("expMed");
-  expTotalEl=document.getElementById("expTotal");
-  net=document.getElementById("net");
-}
-map();
+vitAdult.textContent = ru(vitAdult);
+vitYoung.textContent = ru(vitYoung);
+vitTotal.textContent = ru(vitTotal);
+
+medAdult.textContent = ru(medAdult);
+medYoung.textContent = ru(medYoung);
+medTotal.textContent = ru(medTotal);
+
+expAdult.textContent = ru(expAdult);
+expYoung.textContent = ru(expYoung);
+expTotal.textContent = ru(expTotal);
+
+netResult.textContent = ru(incTotal-expTotal);
 </script>
 
 </body>
