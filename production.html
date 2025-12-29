@@ -19,6 +19,21 @@ body{
   border-radius:10px;
 }
 h1{color:#2e7d32;text-align:center}
+
+/* navigation */
+.nav{
+  display:flex;
+  justify-content:space-between;
+  margin-bottom:10px;
+}
+.nav a{
+  text-decoration:none;
+  color:#2e7d32;
+  font-weight:600;
+  font-size:14px;
+}
+
+/* table */
 table{
   width:100%;
   border-collapse:collapse;
@@ -47,15 +62,33 @@ button{
   margin-top:10px;
   font-size:13px;
   color:#555;
+  text-align:center;
 }
+
+/* footer */
+.footer{
+  margin-top:25px;
+  padding-top:10px;
+  border-top:1px solid #ccc;
+  text-align:center;
+  font-size:13px;
+  color:#555;
+}
+
 @media print{
-  button{display:none}
+  button,.nav{display:none}
 }
 </style>
 </head>
 
 <body>
 <div class="container">
+
+<!-- TOP NAV -->
+<div class="nav">
+  <a href="/business-detail.html">⬅️ Business Detail</a>
+  <a href="/expenses.html">Expenses ➡️</a>
+</div>
 
 <h1>उत्पादन तथा बिक्री योजना</h1>
 
@@ -76,7 +109,9 @@ button{
 📌 नोट: मृत्युदर कटाएपछि मात्र बिक्री/राखिने गणना हुन्छ।
 </div>
 
-<h2 style="margin-top:30px;color:#2e7d32">५ वर्षे परिणाम (स्वतः गणना)</h2>
+<h2 style="margin-top:30px;color:#2e7d32;text-align:center">
+५ वर्षे परिणाम (स्वतः गणना)
+</h2>
 
 <table>
 <thead>
@@ -91,6 +126,17 @@ button{
 </thead>
 <tbody id="resultBody"></tbody>
 </table>
+
+<!-- BOTTOM NAV -->
+<div class="nav" style="margin-top:15px">
+  <a href="/business-detail.html">⬅️ Business Detail</a>
+  <a href="/expenses.html">Expenses ➡️</a>
+</div>
+
+<div class="footer">
+  <strong>Farmer Base BP Engine</strong> – कृषकमैत्री व्यवसायिक योजना यन्त्र<br>
+  Concept By : Prem Prasad Paudel, Rasuwa.
+</div>
 
 </div>
 
