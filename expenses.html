@@ -7,23 +7,42 @@
 
 <style>
 body{font-family:system-ui;background:#f4f6f8;margin:0}
-header{background:#2e7d32;color:#fff;padding:14px 16px;display:flex;justify-content:space-between;align-items:center}
+header{
+  background:#2e7d32;color:#fff;
+  padding:14px 16px;
+  display:flex;justify-content:space-between;align-items:center
+}
 header h1{margin:0;font-size:18px}
-.container{max-width:1100px;margin:auto;padding:16px;padding-bottom:140px}
-.card{background:#fff;border-radius:10px;padding:16px;margin-bottom:16px}
+.container{
+  max-width:1100px;margin:auto;
+  padding:16px;padding-bottom:140px
+}
+.card{
+  background:#fff;border-radius:10px;
+  padding:16px;margin-bottom:16px
+}
 h2{margin-top:0}
 label{font-weight:600;display:block;margin-top:10px}
-input,select,textarea{width:100%;padding:8px;margin-top:6px;border:1px solid #ccc;border-radius:6px}
+input,select,textarea{
+  width:100%;padding:8px;margin-top:6px;
+  border:1px solid #ccc;border-radius:6px
+}
 textarea{min-height:60px}
 button{cursor:pointer}
 .btn{background:#2e7d32;color:#fff;border:none;padding:8px 12px;border-radius:6px}
 .btn-red{background:#c62828;color:#fff;border:none;padding:6px 10px;border-radius:6px}
 .small{font-size:13px;color:#555}
+
 .nav{display:flex;justify-content:space-between;margin:12px 0}
 table{width:100%;border-collapse:collapse;margin-top:10px}
 th,td{border:1px solid #ccc;padding:6px;font-size:14px}
 th{background:#f1f8f4}
-footer{position:fixed;left:0;right:0;bottom:0;background:#f1f8f4;border-top:1px solid #ccc;padding:8px 12px;display:flex;justify-content:space-between}
+
+footer{
+  position:fixed;left:0;right:0;bottom:0;
+  background:#f1f8f4;border-top:1px solid #ccc;
+  padding:8px 12px;display:flex;justify-content:space-between
+}
 </style>
 </head>
 
@@ -36,141 +55,197 @@ footer{position:fixed;left:0;right:0;bottom:0;background:#f1f8f4;border-top:1px 
 
 <div class="container">
 
+<!-- TOP NAV -->
 <div class="nav">
   <button onclick="location.href='production.html'">⬅️ Production</button>
   <button onclick="location.href='capital-source.html'">➡️ Capital</button>
 </div>
 
+<!-- IDENTITY -->
 <div class="card small">
   <b>संस्थाको नाम:</b> <span id="bizName"></span><br>
   <b>परियोजनाको नाम:</b> <span id="projectName"></span>
 </div>
 
-<!-- SUBHEAD -->
+<!-- SUBHEAD MANAGER -->
 <div class="card">
-<h2>🗂️ खर्च उपशीर्षक</h2>
+  <h2>🗂️ खर्च उपशीर्षक व्यवस्थापन</h2>
 
-<label>खर्चको प्रकार</label>
-<select id="subType">
-  <option value="चालु">चालु खर्च</option>
-  <option value="स्थिर">स्थिर खर्च</option>
-</select>
+  <label>खर्चको प्रकार</label>
+  <select id="subType">
+    <option value="चालु">चालु खर्च</option>
+    <option value="स्थिर">स्थिर खर्च</option>
+  </select>
 
-<label>नयाँ उपशीर्षक</label>
-<input id="subInput">
+  <label>नयाँ उपशीर्षक</label>
+  <input id="subInput" placeholder="जस्तै: दाना, मजदुरी, उपकरण">
 
-<button class="btn" onclick="addSubHead()">➕ थप्नुहोस्</button>
-<div id="subList" class="small"></div>
+  <button class="btn" onclick="addSubHead()">➕ उपशीर्षक थप्नुहोस्</button>
+
+  <div id="subList" class="small" style="margin-top:10px"></div>
 </div>
 
-<!-- EXPENSE FORM -->
+<!-- ADD / EDIT EXPENSE -->
 <div class="card">
-<h2>➕ खर्च विवरण</h2>
+  <h2>➕ खर्च विवरण</h2>
 
-<label>खर्चको प्रकार</label>
-<select id="expType">
-  <option value="चालु">चालु</option>
-  <option value="स्थिर">स्थिर</option>
-</select>
+  <label>खर्चको प्रकार</label>
+  <select id="expType">
+    <option value="चालु">चालु खर्च</option>
+    <option value="स्थिर">स्थिर खर्च</option>
+  </select>
 
-<label>उपशीर्षक</label>
-<select id="subHeadSelect"></select>
+  <label>उपशीर्षक</label>
+  <select id="subHeadSelect"></select>
 
-<label>खर्चको नाम</label>
-<input id="itemName">
+  <label>खर्चको नाम</label>
+  <input id="itemName">
 
-<label>इकाई</label>
-<input id="unit">
+  <label>इकाई</label>
+  <input id="unit">
 
-<label>परिमाण</label>
-<input type="number" id="qty">
+  <label>परिमाण</label>
+  <input type="number" id="qty">
 
-<label>दर</label>
-<input type="number" id="rate">
+  <label>दर</label>
+  <input type="number" id="rate">
 
-<label>कुन उत्पादनमा खर्च?</label>
-<div id="productChecks" class="small"></div>
+  <label>कुन उत्पादनमा खर्च गर्ने ?</label>
+  <div id="productChecks" class="small"></div>
 
-<label>कैफियत</label>
-<textarea id="note"></textarea>
+  <label>कैफियत / न्यारेसन</label>
+  <textarea id="note"></textarea>
 
-<button class="btn" onclick="addExpense()">💾 खर्च थप्नुहोस्</button>
+  <button class="btn" onclick="addExpense()">💾 Save Expense</button>
 </div>
 
 <!-- LIST -->
 <div class="card">
-<h2>📄 खर्च सूची</h2>
-<div id="listBox"></div>
+  <h2>📄 खर्च सूची</h2>
+  <div id="listBox"></div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="nav">
+  <button onclick="location.href='production.html'">⬅️ Production</button>
+  <button onclick="location.href='capital-source.html'">➡️ Capital</button>
 </div>
 
 </div>
 
 <footer>
-<span class="small">Expenses</span>
-<span class="small">FarmerBase BP Engine</span>
+  <span class="small">Expenses</span>
+  <span class="small">FarmerBase BP Engine</span>
 </footer>
 
 <script>
-/* ===== IDENTITY ===== */
-const login=JSON.parse(localStorage.getItem("fb_login"))||{};
-bizName.innerText=login.businessName||"-";
-projectName.innerText=login.projectName||"-";
+/* ========= IDENTITY ========= */
+const login = JSON.parse(localStorage.getItem("fb_login")) || {};
+bizName.innerText = login.businessName || "-";
+projectName.innerText = login.projectName || "-";
 
-/* ===== PRODUCTS ===== */
-const products=JSON.parse(localStorage.getItem("fb_products"))||[];
+/* ========= PRODUCTS ========= */
+const products = JSON.parse(localStorage.getItem("fb_products")) || [];
 
-/* ===== CAPITAL SOURCES (READ ONLY) ===== */
-const capitalSources=JSON.parse(localStorage.getItem("capitalSources"))||[];
+/* ========= SUBHEADS ========= */
+let subHeads = JSON.parse(localStorage.getItem("fb_expense_subheads")) || {
+  "चालु": [],
+  "स्थिर": []
+};
 
-/* ===== SUBHEADS ===== */
-let subHeads=JSON.parse(localStorage.getItem("fb_expense_subheads"))||{"चालु":[],"स्थिर":[]};
 function saveSubHeads(){
-  localStorage.setItem("fb_expense_subheads",JSON.stringify(subHeads));
-  renderSubHeads();renderSubDropdown();
+  localStorage.setItem("fb_expense_subheads", JSON.stringify(subHeads));
+  renderSubHeads();
+  renderSubDropdown();
 }
+
 function addSubHead(){
-  const t=subType.value,v=subInput.value.trim();
-  if(!v||subHeads[t].includes(v))return;
-  subHeads[t].push(v);subInput.value="";saveSubHeads();
+  const t = subType.value;
+  const v = subInput.value.trim();
+  if(!v) return;
+  if(!subHeads[t].includes(v)){
+    subHeads[t].push(v);
+    saveSubHeads();
+  }
+  subInput.value="";
 }
+
+function delSubHead(t,i){
+  if(!confirm("उपशीर्षक हटाउने?")) return;
+  subHeads[t].splice(i,1);
+  saveSubHeads();
+}
+
 function renderSubHeads(){
   const t=subType.value;
-  subList.innerHTML=subHeads[t].map((s,i)=>`
-    <div>${s}
-    <button class="btn-red" onclick="delSubHead('${t}',${i})">x</button></div>`).join("")||"उपशीर्षक छैन";
+  subList.innerHTML = subHeads[t].length
+    ? subHeads[t].map((s,i)=>`
+      <div>${s}
+        <button class="btn-red"
+          onclick="delSubHead('${t}',${i})">हटाउनुहोस्</button>
+      </div>`).join("")
+    : "अहिलेसम्म उपशीर्षक छैन।";
 }
-function delSubHead(t,i){subHeads[t].splice(i,1);saveSubHeads();}
-subType.onchange=renderSubHeads;renderSubHeads();
+subType.onchange=renderSubHeads;
+renderSubHeads();
 
+/* ========= SUBHEAD DROPDOWN ========= */
 function renderSubDropdown(){
   const t=expType.value;
   subHeadSelect.innerHTML="";
   (subHeads[t]||[]).forEach(s=>{
     const o=document.createElement("option");
-    o.value=s;o.textContent=s;subHeadSelect.appendChild(o);
+    o.value=s;o.textContent=s;
+    subHeadSelect.appendChild(o);
   });
 }
-expType.onchange=renderSubDropdown;renderSubDropdown();
+expType.onchange=renderSubDropdown;
+renderSubDropdown();
 
-/* ===== PRODUCT CHECKS ===== */
-function renderProductChecks(sel=[]){
+/* ========= PRODUCT CHECKS ========= */
+function renderProductChecks(selected=[]){
   productChecks.innerHTML="";
   products.forEach(p=>{
     productChecks.innerHTML+=`
-    <label><input type="checkbox" value="${p.name}"
-    ${sel.includes(p.name)?"checked":""}> ${p.name}</label><br>`;
+      <label>
+        <input type="checkbox" value="${p.name}"
+        ${selected.includes(p.name)?"checked":""}>
+        ${p.name}
+      </label><br>`;
   });
 }
 renderProductChecks();
 
-/* ===== DATA ===== */
-let expenses=JSON.parse(localStorage.getItem("fb_expenses"))||[];
-let productCost=JSON.parse(localStorage.getItem("fb_product_cost"))||[];
-let capitalUsage=JSON.parse(localStorage.getItem("fb_capital_usage"))||[];
+/* ========= EXPENSE DATA ========= */
+let expenses = JSON.parse(localStorage.getItem("fb_expenses")) || [];
+let editIndex = -1;
 
-/* ===== ADD EXPENSE ===== */
+/* ========= REBUILD PRODUCT COST (CORE FIX) ========= */
+function rebuildProductCost(){
+  let productCost = [];
+
+  expenses.forEach(e=>{
+    const total = e.qty * e.rate;
+    const count = e.products.length || 1;
+    const share = total / count;
+
+    e.products.forEach(p=>{
+      productCost.push({
+        product: p,
+        amount: share,
+        type: e.type
+      });
+    });
+  });
+
+  localStorage.setItem("fb_product_cost", JSON.stringify(productCost));
+}
+
+/* ========= ADD / EDIT ========= */
 function addExpense(){
-  const linked=[...productChecks.querySelectorAll("input:checked")].map(c=>c.value);
+  const linked=[...productChecks.querySelectorAll("input:checked")]
+    .map(c=>c.value);
+
   const e={
     type:expType.value,
     sub:subHeadSelect.value,
@@ -181,47 +256,100 @@ function addExpense(){
     products:linked,
     note:note.value.trim()
   };
-  if(!e.sub||!e.name||!e.qty||!e.rate){alert("सबै विवरण चाहिन्छ");return;}
-  expenses.push(e);
 
-  linked.forEach(p=>{
-    const amt=e.qty*e.rate;
-    productCost.push({product:p,amount:amt,type:e.type});
+  if(!e.sub||!e.name||!e.qty||!e.rate){
+    alert("उपशीर्षक, नाम, परिमाण, दर आवश्यक");
+    return;
+  }
 
-    /* CAPITAL SOURCE % USAGE */
-    const totalCap=capitalSources.reduce((s,c)=>s+c.amount,0);
-    capitalSources.forEach(c=>{
-      capitalUsage.push({
-        source:c.source,
-        percent:((c.amount/totalCap)*100).toFixed(2),
-        product:p,
-        expense:e.sub,
-        capitalType:e.type,
-        amount:(amt*(c.amount/totalCap)).toFixed(2)
-      });
-    });
-  });
+  if(editIndex>-1){
+    expenses[editIndex]=e;
+    editIndex=-1;
+  }else{
+    expenses.push(e);
+  }
 
-  localStorage.setItem("fb_expenses",JSON.stringify(expenses));
-  localStorage.setItem("fb_product_cost",JSON.stringify(productCost));
-  localStorage.setItem("fb_capital_usage",JSON.stringify(capitalUsage));
-  clearForm();render();
+  localStorage.setItem("fb_expenses", JSON.stringify(expenses));
+  rebuildProductCost();
+  clearForm();
+  render();
 }
 
-/* ===== RENDER ===== */
+/* ========= DELETE ========= */
+function delExp(i){
+  if(!confirm("खर्च हटाउने?")) return;
+  expenses.splice(i,1);
+  localStorage.setItem("fb_expenses", JSON.stringify(expenses));
+  rebuildProductCost();
+  render();
+}
+
+/* ========= RENDER LIST ========= */
 function render(){
-  if(!expenses.length){listBox.innerHTML="खर्च छैन";return;}
-  let h="<table><tr><th>प्रकार</th><th>उपशीर्षक</th><th>नाम</th><th>रकम</th><th>उत्पादन</th></tr>";
-  expenses.forEach(e=>{
-    h+=`<tr><td>${e.type}</td><td>${e.sub}</td><td>${e.name}</td>
-    <td>${e.qty*e.rate}</td><td>${e.products.join(",")}</td></tr>`;
+  if(!expenses.length){
+    listBox.innerHTML="अहिलेसम्म खर्च छैन।";
+    return;
+  }
+
+  let total=0, cur=0, fix=0;
+
+  let html="<table><tr><th>प्रकार</th><th>उपशीर्षक</th><th>नाम</th><th>रकम</th><th>उत्पादन</th><th></th></tr>";
+
+  expenses.forEach((e,i)=>{
+    const amt = e.qty * e.rate;
+    total += amt;
+    e.type==="चालु" ? cur+=amt : fix+=amt;
+
+    html+=`
+      <tr>
+        <td>${e.type}</td>
+        <td>${e.sub}</td>
+        <td>${e.name}</td>
+        <td>${amt.toLocaleString()}</td>
+        <td>${e.products.join(", ")||"-"}</td>
+        <td>
+          <button class="btn" onclick="editExp(${i})">✏️</button>
+          <button class="btn-red" onclick="delExp(${i})">🗑️</button>
+        </td>
+      </tr>`;
   });
-  listBox.innerHTML=h+"</table>";
+
+  html+=`
+    <tr>
+      <th colspan="3">कुल खर्च</th>
+      <th colspan="3">रु. ${total.toLocaleString()}
+      (चालु: ${cur.toLocaleString()} | स्थिर: ${fix.toLocaleString()})</th>
+    </tr>
+  </table>`;
+
+  listBox.innerHTML=html;
 }
+
+/* ========= EDIT ========= */
+function editExp(i){
+  const e=expenses[i];
+  expType.value=e.type;
+  renderSubDropdown();
+  subHeadSelect.value=e.sub;
+  itemName.value=e.name;
+  unit.value=e.unit;
+  qty.value=e.qty;
+  rate.value=e.rate;
+  note.value=e.note;
+  renderProductChecks(e.products);
+  editIndex=i;
+}
+
+/* ========= CLEAR ========= */
 function clearForm(){
-  itemName.value="";unit.value="";qty.value="";rate.value="";note.value="";
+  itemName.value="";
+  unit.value="";
+  qty.value="";
+  rate.value="";
+  note.value="";
   renderProductChecks();
 }
+
 render();
 </script>
 
