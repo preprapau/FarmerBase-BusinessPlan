@@ -1,1 +1,241 @@
-lksdnflksjf
+<!DOCTYPE html>
+<html lang="ne">
+<head>
+<meta charset="UTF-8">
+<title>Production | FarmerBase BP Engine</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{font-family:system-ui;background:#f4f6f8;margin:0}
+header{
+  background:#2e7d32;color:#fff;
+  padding:14px 16px;
+  display:flex;justify-content:space-between;align-items:center
+}
+header h1{margin:0;font-size:18px}
+.container{
+  max-width:1000px;margin:auto;
+  padding:16px;padding-bottom:120px
+}
+.card{
+  background:#fff;border-radius:10px;
+  padding:16px;margin-bottom:16px
+}
+h2{margin-top:0}
+label{font-weight:600;display:block;margin-top:10px}
+input,select,textarea{
+  width:100%;padding:8px;margin-top:6px;
+  border:1px solid #ccc;border-radius:6px
+}
+textarea{min-height:60px}
+button{cursor:pointer}
+.btn{background:#2e7d32;color:#fff;border:none;padding:8px 12px;border-radius:6px}
+.btn-red{background:#c62828;color:#fff;border:none;padding:6px 10px;border-radius:6px}
+.small{font-size:13px;color:#555}
+
+.nav{display:flex;justify-content:space-between;margin:12px 0}
+.item{
+  border-bottom:1px solid #eee;
+  padding:10px 0
+}
+.item h4{margin:0}
+.type-title{
+  background:#f1f8f4;
+  padding:6px 10px;
+  border-radius:6px;
+  margin-top:12px;
+  font-weight:600
+}
+footer{
+  position:fixed;left:0;right:0;bottom:0;
+  background:#f1f8f4;border-top:1px solid #ccc;
+  padding:8px 12px;display:flex;justify-content:space-between
+}
+</style>
+</head>
+
+<body>
+
+<!-- HEADER -->
+<header>
+  <h1>Production</h1>
+  <button onclick="location.href='short-info.html'">🏠 Home</button>
+</header>
+
+<div class="container">
+
+<!-- TOP NAV -->
+<div class="nav">
+  <button onclick="location.href='business-detail.html'">⬅️ Business Detail</button>
+  <button onclick="location.href='expenses.html'">➡️ Next</button>
+</div>
+
+<!-- IDENTITY -->
+<div class="card small">
+  <b>संस्थाको नाम:</b> <span id="bizName"></span><br>
+  <b>परियोजनाको नाम:</b> <span id="projectName"></span>
+</div>
+
+<!-- ADD PRODUCTION -->
+<div class="card">
+  <h2>➕ उत्पादन / सेवा थप्नुहोस्</h2>
+
+  <label>उत्पादन प्रकार</label>
+  <select id="typeSelect"></select>
+  <input id="newType" placeholder="नयाँ प्रकार थप्नुहोस् (जस्तै: सेवा)">
+  <button class="btn" onclick="addType()">➕ प्रकार थप्नुहोस्</button>
+
+  <label>वस्तु / सेवा नाम</label>
+  <input id="nameInput" placeholder="जस्तै: गोलभेंडा खेती">
+
+  <label>इकाई</label>
+  <input id="unitInput" placeholder="जस्तै: के.जी., लिटर, वटा">
+
+  <label>परिमाण</label>
+  <input id="qtyInput" type="number">
+
+  <label>कैफियत / विवरण</label>
+  <textarea id="noteInput"></textarea>
+
+  <button class="btn" onclick="addProduct()">💾 उत्पादन थप्नुहोस्</button>
+</div>
+
+<!-- LIST -->
+<div class="card">
+  <h2>📄 उत्पादन सूची</h2>
+  <div id="listBox" class="small"></div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="nav">
+  <button onclick="location.href='business-detail.html'">⬅️ Business Detail</button>
+  <button onclick="location.href='expenses.html'">➡️ Next</button>
+</div>
+
+</div>
+
+<footer>
+  <span class="small">Production</span>
+  <span class="small">FarmerBase BP Engine</span>
+</footer>
+
+<script>
+/* ===== IDENTITY ===== */
+const login = JSON.parse(localStorage.getItem("fb_login")) || {};
+bizName.innerText = login.businessName || "-";
+projectName.innerText = login.projectName || "-";
+
+/* ===== DATA ===== */
+let products = JSON.parse(localStorage.getItem("fb_products")) || [];
+let types = JSON.parse(localStorage.getItem("fb_product_types")) || ["कृषि"];
+let editIndex = -1;
+
+function saveAll(){
+  localStorage.setItem("fb_products", JSON.stringify(products));
+  localStorage.setItem("fb_product_types", JSON.stringify(types));
+}
+
+function renderTypes(){
+  typeSelect.innerHTML="";
+  types.forEach(t=>{
+    const o=document.createElement("option");
+    o.value=t;o.textContent=t;
+    typeSelect.appendChild(o);
+  });
+}
+
+function addType(){
+  const t=newType.value.trim();
+  if(!t) return;
+  if(!types.includes(t)){
+    types.push(t);
+    saveAll();
+    renderTypes();
+  }
+  newType.value="";
+}
+
+function addProduct(){
+  const p={
+    type:typeSelect.value,
+    name:nameInput.value.trim(),
+    unit:unitInput.value.trim(),
+    qty:qtyInput.value,
+    note:noteInput.value.trim()
+  };
+  if(!p.name||!p.unit||!p.qty){
+    alert("नाम, इकाई र परिमाण आवश्यक छन्");
+    return;
+  }
+
+  if(editIndex>-1){
+    products[editIndex]=p;
+    editIndex=-1;
+  }else{
+    products.push(p);
+  }
+  saveAll();
+  clearForm();
+  render();
+}
+
+function clearForm(){
+  nameInput.value="";
+  unitInput.value="";
+  qtyInput.value="";
+  noteInput.value="";
+}
+
+function render(){
+  if(!products.length){
+    listBox.innerHTML="अहिलेसम्म कुनै उत्पादन थपिएको छैन।";
+    return;
+  }
+  listBox.innerHTML="";
+  types.forEach(t=>{
+    const group=products.filter(p=>p.type===t);
+    if(!group.length) return;
+
+    const title=document.createElement("div");
+    title.className="type-title";
+    title.textContent=t;
+    listBox.appendChild(title);
+
+    group.forEach((p,i)=>{
+      const div=document.createElement("div");
+      div.className="item";
+      div.innerHTML=`
+        <h4>${p.name}</h4>
+        <div>${p.qty} ${p.unit}</div>
+        <div class="small">${p.note||""}</div>
+        <button class="btn" onclick="editProduct(${i})">✏️ Edit</button>
+        <button class="btn-red" onclick="deleteProduct(${i})">🗑️ Delete</button>
+      `;
+      listBox.appendChild(div);
+    });
+  });
+}
+
+function editProduct(i){
+  const p=products[i];
+  typeSelect.value=p.type;
+  nameInput.value=p.name;
+  unitInput.value=p.unit;
+  qtyInput.value=p.qty;
+  noteInput.value=p.note;
+  editIndex=i;
+}
+
+function deleteProduct(i){
+  if(!confirm("यो उत्पादन हटाउने?")) return;
+  products.splice(i,1);
+  saveAll();
+  render();
+}
+
+renderTypes();
+render();
+</script>
+
+</body>
+</html>
