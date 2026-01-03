@@ -2,7 +2,7 @@
 <html lang="ne">
 <head>
 <meta charset="UTF-8">
-<title>Income | FarmerBase BP Engine</title>
+<title>Income (Auto) | FarmerBase BP Engine</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -12,16 +12,12 @@ display:flex;justify-content:space-between;align-items:center}
 header h1{margin:0;font-size:18px}
 .container{max-width:1100px;margin:auto;padding:16px;padding-bottom:140px}
 .card{background:#fff;border-radius:10px;padding:16px;margin-bottom:16px}
-label{font-weight:600;display:block;margin-top:10px}
-input,select{width:100%;padding:8px;margin-top:6px;
-border:1px solid #ccc;border-radius:6px}
-button{cursor:pointer}
-.btn{background:#2e7d32;color:#fff;border:none;padding:8px 12px;border-radius:6px}
-.small{font-size:13px;color:#555}
 table{width:100%;border-collapse:collapse;margin-top:10px}
 th,td{border:1px solid #ccc;padding:6px;font-size:14px}
 th{background:#f1f8f4}
+input{width:80px;padding:4px}
 .nav{display:flex;justify-content:space-between;margin:12px 0}
+.small{font-size:13px;color:#555}
 footer{
 position:fixed;left:0;right:0;bottom:0;
 background:#f1f8f4;border-top:1px solid #ccc;
@@ -39,4 +35,112 @@ padding:8px 12px;display:flex;justify-content:space-between
 
 <div class="container">
 
+<div class="nav">
+  <button onclick="location.href='capital-source.html'">⬅️ Capital</button>
+  <button onclick="location.href='profit-loss.html'">➡️ Profit / Loss</button>
+</div>
 
+<div class="card">
+  <h2>📈 उत्पादन अनुसार आम्दानी</h2>
+  <div id="incomeBox"></div>
+</div>
+
+</div>
+
+<footer>
+<span class="small">Income</span>
+<span class="small">FarmerBase BP Engine</span>
+</footer>
+
+<script>
+/* =============================
+   BUILD PRODUCT COST MAP
+   ============================= */
+function getProductCostMap(){
+  const list = JSON.parse(localStorage.getItem("fb_product_cost")) || [];
+  let map = {};
+  list.forEach(x=>{
+    map[x.product] = (map[x.product] || 0) + Number(x.amount);
+  });
+  return map;
+}
+
+/* =============================
+   RENDER INCOME TABLE
+   ============================= */
+function renderIncome(){
+  const costMap = getProductCostMap();
+  const products = Object.keys(costMap);
+
+  if(!products.length){
+    incomeBox.innerHTML = "अहिलेसम्म उत्पादन लागत छैन।";
+    return;
+  }
+
+  let totalCost = 0;
+  let totalIncome = 0;
+
+  let html = `
+  <table>
+    <tr>
+      <th>उत्पादन</th>
+      <th>लागत (Auto)</th>
+      <th>नाफा %</th>
+      <th>आम्दानी (Auto)</th>
+    </tr>`;
+
+  products.forEach(p=>{
+    const cost = costMap[p];
+    totalCost += cost;
+    const income = cost * 1.20; // default 20%
+    totalIncome += income;
+
+    html += `
+      <tr>
+        <td>${p}</td>
+        <td>${cost.toLocaleString()}</td>
+        <td>
+          <input type="number" value="20"
+            onchange="recalc('${p}', this.value)">
+        </td>
+        <td id="inc_${p}">${income.toLocaleString()}</td>
+      </tr>`;
+  });
+
+  html += `
+    <tr>
+      <th>कुल</th>
+      <th>${totalCost.toLocaleString()}</th>
+      <th></th>
+      <th id="totalIncome">${totalIncome.toLocaleString()}</th>
+    </tr>
+  </table>`;
+
+  incomeBox.innerHTML = html;
+}
+
+/* =============================
+   RECALCULATE PER PRODUCT
+   ============================= */
+function recalc(product, pct){
+  const map = getProductCostMap();
+  const cost = map[product] || 0;
+  const income = cost + (cost * pct / 100);
+  document.getElementById("inc_"+product).innerText =
+    income.toLocaleString();
+
+  // recompute grand total
+  let sum = 0;
+  Object.keys(map).forEach(p=>{
+    const el = document.getElementById("inc_"+p);
+    if(el) sum += Number(el.innerText.replace(/,/g,''));
+  });
+  document.getElementById("totalIncome").innerText =
+    sum.toLocaleString();
+}
+
+renderIncome();
+</script>
+
+</body>
+</html>
