@@ -41,16 +41,10 @@ border-top:1px solid #ccc;padding:8px 12px;display:flex;justify-content:space-be
   <button onclick="location.href='income.html'">➡️ Income</button>
 </div>
 
-<!-- FULL CAPITAL -->
+<!-- PROJECT COST (AUTO FROM EXPENSES) -->
 <div class="card">
-  <h2>💰 कुल पुँजि (Full Capital)</h2>
-
-  <label>कुल पुँजि रकम</label>
-  <input type="number" id="fullCapital" placeholder="जस्तै: 1000000">
-
-  <button class="btn" onclick="saveFullCapital()">💾 Save Full Capital</button>
-
-  <div id="fullCapitalView" class="small"></div>
+  <h2>💰 कुल परियोजना लागत (Expenses बाट)</h2>
+  <div id="projectCostView" class="small"></div>
 </div>
 
 <!-- CAPITAL SOURCES -->
@@ -58,7 +52,7 @@ border-top:1px solid #ccc;padding:8px 12px;display:flex;justify-content:space-be
   <h2>📊 पुँजिको स्रोत (% मात्र)</h2>
 
   <label>स्रोतको नाम</label>
-  <input id="srcName" placeholder="जस्तै: आफ्नै लगानी">
+  <input id="srcName" placeholder="जस्तै: आफ्नै लगानी, बैंक ऋण">
 
   <label>प्रतिशत (%)</label>
   <input type="number" id="srcPercent" placeholder="जस्तै: 60">
@@ -76,36 +70,39 @@ border-top:1px solid #ccc;padding:8px 12px;display:flex;justify-content:space-be
 </footer>
 
 <script>
-/* ===== FULL CAPITAL ===== */
-function saveFullCapital(){
-  const fc = Number(document.getElementById("fullCapital").value);
-  if(!fc || fc<=0){
-    alert("कुल पुँजि हाल्नुहोस्");
-    return;
-  }
-  localStorage.setItem("fb_full_capital", fc);
-  renderFullCapital();
+/* ===============================
+   GET TOTAL PROJECT COST
+   =============================== */
+function getProjectCost(){
+  const expenses = JSON.parse(localStorage.getItem("fb_expenses")) || [];
+  let total = 0;
+  expenses.forEach(e=>{
+    total += (Number(e.qty) * Number(e.rate));
+  });
+  return total;
 }
 
-function getFullCapital(){
-  return Number(localStorage.getItem("fb_full_capital")) || 0;
+/* ===============================
+   RENDER PROJECT COST
+   =============================== */
+function renderProjectCost(){
+  const total = getProjectCost();
+  projectCostView.innerHTML = total
+    ? `<b>कुल लागत:</b> रु. ${total.toLocaleString()} 
+       <br><span class="small">(चालु + स्थिर खर्चको योग)</span>`
+    : "अहिलेसम्म खर्च विवरण छैन।";
 }
 
-function renderFullCapital(){
-  const fc = getFullCapital();
-  fullCapitalView.innerText = fc
-    ? "Saved Full Capital: रु. " + fc.toLocaleString()
-    : "";
-}
-
-/* ===== CAPITAL SOURCES (% ONLY) ===== */
+/* ===============================
+   CAPITAL SOURCES (% ONLY)
+   =============================== */
 let sources = JSON.parse(localStorage.getItem("fb_capital_sources")) || [];
 
 function addSource(){
   const name = srcName.value.trim();
   const pct  = Number(srcPercent.value);
 
-  if(!name || pct<=0){
+  if(!name || pct <= 0){
     alert("स्रोत र प्रतिशत आवश्यक");
     return;
   }
@@ -119,32 +116,47 @@ function addSource(){
   sources.push({ source:name, percent:pct });
   localStorage.setItem("fb_capital_sources", JSON.stringify(sources));
 
-  srcName.value=""; srcPercent.value="";
+  srcName.value="";
+  srcPercent.value="";
   renderSources();
 }
 
 function renderSources(){
-  const fc = getFullCapital();
+  const totalCost = getProjectCost();
+
   if(!sources.length){
     srcList.innerHTML="अहिलेसम्म स्रोत छैन।";
     return;
   }
 
-  let html="<table><tr><th>स्रोत</th><th>%</th><th>Calculated Amount</th></tr>";
+  let html="<table><tr><th>स्रोत</th><th>%</th><th>रकम (Auto)</th></tr>";
+
   sources.forEach(s=>{
-    const amt = fc ? (fc*s.percent/100) : 0;
-    html+=`
+    const amt = totalCost ? (totalCost * s.percent / 100) : 0;
+    html += `
       <tr>
         <td>${s.source}</td>
         <td>${s.percent}%</td>
         <td>रु. ${amt.toLocaleString()}</td>
-      </tr>`;
+      </tr>
+    `;
   });
-  html+="</table>";
-  srcList.innerHTML=html;
+
+  html += `
+    <tr>
+      <th>कुल</th>
+      <th>100%</th>
+      <th>रु. ${totalCost.toLocaleString()}</th>
+    </tr>
+  </table>`;
+
+  srcList.innerHTML = html;
 }
 
-renderFullCapital();
+/* ===============================
+   INIT
+   =============================== */
+renderProjectCost();
 renderSources();
 </script>
 
