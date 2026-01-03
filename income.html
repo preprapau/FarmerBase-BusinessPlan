@@ -7,36 +7,24 @@
 
 <style>
 body{font-family:system-ui;background:#f4f6f8;margin:0}
-header{
-  background:#2e7d32;color:#fff;
-  padding:14px 16px;
-  display:flex;justify-content:space-between;align-items:center
-}
+header{background:#2e7d32;color:#fff;padding:14px 16px;
+display:flex;justify-content:space-between;align-items:center}
 header h1{margin:0;font-size:18px}
-.container{
-  max-width:1100px;margin:auto;
-  padding:16px;padding-bottom:140px
-}
-.card{
-  background:#fff;border-radius:10px;
-  padding:16px;margin-bottom:16px
-}
-h2{margin-top:0}
+.container{max-width:1100px;margin:auto;padding:16px;padding-bottom:140px}
+.card{background:#fff;border-radius:10px;padding:16px;margin-bottom:16px}
 label{font-weight:600;display:block;margin-top:10px}
-input,select,button{
+input,select,textarea{
   width:100%;padding:8px;margin-top:6px;
   border:1px solid #ccc;border-radius:6px
 }
 button{cursor:pointer}
-.btn{background:#2e7d32;color:#fff;border:none}
-.btn-red{background:#c62828;color:#fff;border:none}
+.btn{background:#2e7d32;color:#fff;border:none;padding:8px 12px;border-radius:6px}
+.btn-red{background:#c62828;color:#fff;border:none;padding:6px 10px;border-radius:6px}
 .small{font-size:13px;color:#555}
-
 .nav{display:flex;justify-content:space-between;margin:12px 0}
 table{width:100%;border-collapse:collapse;margin-top:10px}
 th,td{border:1px solid #ccc;padding:6px;font-size:14px}
 th{background:#f1f8f4}
-
 footer{
   position:fixed;left:0;right:0;bottom:0;
   background:#f1f8f4;border-top:1px solid #ccc;
@@ -54,75 +42,49 @@ footer{
 
 <div class="container">
 
-<!-- TOP NAV -->
 <div class="nav">
-  <button onclick="location.href='capital-source.html'">⬅️ Capital Source</button>
-  <button onclick="location.href='profit-loss.html'">➡️ Next</button>
+  <button onclick="location.href='capital-source.html'">⬅️ Capital</button>
+  <button onclick="location.href='profit-loss.html'">➡️ Profit / Loss</button>
 </div>
 
-<!-- IDENTITY -->
-<div class="card small">
-  <b>संस्थाको नाम:</b> <span id="bizName"></span><br>
-  <b>परियोजनाको नाम:</b> <span id="projectName"></span>
-</div>
-
-<!-- ADD / EDIT INCOME -->
+<!-- ADD INCOME -->
 <div class="card">
-  <h2>➕ आम्दानी विवरण (उत्पादन अनुसार)</h2>
+<h2>➕ आम्दानी विवरण</h2>
 
-  <label>उत्पादन</label>
-  <select id="productSelect"></select>
+<label>उत्पादन</label>
+<select id="productSelect"></select>
 
-  <label>प्रति इकाई लागत (Auto)</label>
-  <input id="unitCost" disabled>
+<label>इकाई</label>
+<input id="unit" placeholder="जस्तै: kg, वटा">
 
-  <label>नाफा %</label>
-  <input id="margin" type="number" placeholder="जस्तै: 20">
+<label>परिमाण</label>
+<input type="number" id="qty">
 
-  <label>वा बिक्री दर (प्रति इकाई)</label>
-  <input id="sellPrice" type="number" placeholder="जस्तै: 80">
+<label>दर</label>
+<input type="number" id="rate">
 
-  <button class="btn" onclick="addIncome()">💾 आम्दानी थप्नुहोस्</button>
+<label>कैफियत / न्यारेसन</label>
+<textarea id="note"></textarea>
+
+<button class="btn" onclick="addIncome()">💾 आम्दानी थप्नुहोस्</button>
 </div>
 
 <!-- LIST -->
 <div class="card">
-  <h2>📄 आम्दानी सूची</h2>
-  <div id="listBox"></div>
-</div>
-
-<!-- SUMMARY -->
-<div class="card">
-  <h2>📊 आम्दानी सारांश</h2>
-  <div id="summary" class="small"></div>
-</div>
-
-<!-- BOTTOM NAV -->
-<div class="nav">
-  <button onclick="location.href='capital-source.html'">⬅️ Capital Source</button>
-  <button onclick="location.href='profit-loss.html'">➡️ Next</button>
+<h2>📄 आम्दानी सूची</h2>
+<div id="listBox"></div>
 </div>
 
 </div>
 
 <footer>
-  <span class="small">Income</span>
-  <span class="small">FarmerBase BP Engine</span>
+<span class="small">Income</span>
+<span class="small">FarmerBase BP Engine</span>
 </footer>
 
 <script>
-/* ===== IDENTITY ===== */
-const login = JSON.parse(localStorage.getItem("fb_login")) || {};
-bizName.innerText = login.businessName || "-";
-projectName.innerText = login.projectName || "-";
-
-/* ===== DATA LOAD ===== */
+/* ===== PRODUCTS ===== */
 const products = JSON.parse(localStorage.getItem("fb_products")) || [];
-const productCost = JSON.parse(localStorage.getItem("fb_product_cost")) || [];
-let incomes = JSON.parse(localStorage.getItem("fb_incomes")) || [];
-let editIndex = -1;
-
-/* ===== PRODUCT DROPDOWN ===== */
 function renderProducts(){
   productSelect.innerHTML="";
   products.forEach(p=>{
@@ -134,106 +96,69 @@ function renderProducts(){
 }
 renderProducts();
 
-/* ===== COST CALC ===== */
-function calcUnitCost(prod){
-  const cost = productCost
-    .filter(c=>c.product===prod)
-    .reduce((s,c)=>s+c.amount,0);
-  const p = products.find(x=>x.name===prod);
-  return p ? (cost / p.qty) : 0;
-}
+/* ===== INCOME DATA ===== */
+let incomes = JSON.parse(localStorage.getItem("fb_income")) || [];
 
-productSelect.onchange=()=>{
-  unitCost.value = calcUnitCost(productSelect.value).toFixed(2);
-};
-productSelect.onchange();
-
-/* ===== ADD / EDIT ===== */
+/* ===== ADD INCOME ===== */
 function addIncome(){
-  const prod = productSelect.value;
-  const cost = +unitCost.value;
-  const qty = products.find(p=>p.name===prod)?.qty || 0;
-  let price = +sellPrice.value;
+  const i = {
+    product: productSelect.value,
+    unit: unit.value.trim(),
+    qty: Number(qty.value),
+    rate: Number(rate.value),
+    note: note.value.trim()
+  };
 
-  if(!price && margin.value){
-    price = cost + (cost * (+margin.value)/100);
-  }
-  if(!price){
-    alert("नाफा % वा बिक्री दर दिनुहोस्");
+  if(!i.product || !i.qty || !i.rate){
+    alert("उत्पादन, परिमाण र दर आवश्यक");
     return;
   }
 
-  const inc={
-    product:prod,
-    qty,
-    unitCost:cost,
-    sellPrice:price,
-    margin: margin.value || "",
-    total: qty * price
-  };
+  incomes.push(i);
+  localStorage.setItem("fb_income", JSON.stringify(incomes));
 
-  if(editIndex>-1){
-    incomes[editIndex]=inc;
-    editIndex=-1;
-  }else{
-    incomes.push(inc);
-  }
-
-  localStorage.setItem("fb_incomes", JSON.stringify(incomes));
   clearForm();
   render();
-}
-
-function clearForm(){
-  margin.value="";
-  sellPrice.value="";
 }
 
 /* ===== RENDER ===== */
 function render(){
   if(!incomes.length){
-    listBox.innerHTML="अहिलेसम्म कुनै आम्दानी विवरण छैन।";
-    summary.innerHTML="";
+    listBox.innerHTML="अहिलेसम्म आम्दानी छैन।";
     return;
   }
 
-  let html="<table><tr><th>उत्पादन</th><th>परिमाण</th><th>बिक्री दर</th><th>कुल आम्दानी</th><th></th></tr>";
-  let grand=0;
-  incomes.forEach((i,idx)=>{
-    grand+=i.total;
-    html+=`
+  let total=0;
+  let html="<table><tr><th>उत्पादन</th><th>परिमाण</th><th>दर</th><th>रकम</th></tr>";
+
+  incomes.forEach(i=>{
+    const amt = i.qty * i.rate;
+    total += amt;
+    html += `
       <tr>
         <td>${i.product}</td>
-        <td>${i.qty}</td>
-        <td>${i.sellPrice}</td>
-        <td>${i.total.toFixed(2)}</td>
-        <td>
-          <button class="btn" onclick="editInc(${idx})">✏️</button>
-          <button class="btn-red" onclick="delInc(${idx})">🗑️</button>
-        </td>
+        <td>${i.qty} ${i.unit}</td>
+        <td>${i.rate}</td>
+        <td>${amt.toLocaleString()}</td>
       </tr>
     `;
   });
-  html+="</table>";
-  listBox.innerHTML=html;
 
-  summary.innerHTML=`कुल आम्दानी: <b>${grand.toFixed(2)}</b>`;
+  html += `
+    <tr>
+      <th colspan="3">कुल आम्दानी</th>
+      <th>${total.toLocaleString()}</th>
+    </tr>
+  </table>`;
+
+  listBox.innerHTML = html;
 }
 
-/* ===== EDIT / DELETE ===== */
-function editInc(i){
-  const x=incomes[i];
-  productSelect.value=x.product;
-  unitCost.value=x.unitCost;
-  sellPrice.value=x.sellPrice;
-  margin.value=x.margin;
-  editIndex=i;
-}
-function delInc(i){
-  if(!confirm("यो आम्दानी हटाउने?"))return;
-  incomes.splice(i,1);
-  localStorage.setItem("fb_incomes", JSON.stringify(incomes));
-  render();
+function clearForm(){
+  unit.value="";
+  qty.value="";
+  rate.value="";
+  note.value="";
 }
 
 render();
