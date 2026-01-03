@@ -35,7 +35,7 @@ button{cursor:pointer}
 
 .nav{display:flex;justify-content:space-between;margin:12px 0}
 table{width:100%;border-collapse:collapse;margin-top:10px}
-th,td{border:1px solid #ccc;padding:6px;font-size:14px;text-align:left}
+th,td{border:1px solid #ccc;padding:6px;font-size:14px}
 th{background:#f1f8f4}
 
 footer{
@@ -67,6 +67,24 @@ footer{
   <b>परियोजनाको नाम:</b> <span id="projectName"></span>
 </div>
 
+<!-- SUBHEAD MANAGER -->
+<div class="card">
+  <h2>🗂️ खर्च उपशीर्षक व्यवस्थापन</h2>
+
+  <label>खर्चको प्रकार</label>
+  <select id="subType">
+    <option value="चालु">चालु खर्च</option>
+    <option value="स्थिर">स्थिर खर्च</option>
+  </select>
+
+  <label>नयाँ उपशीर्षक</label>
+  <input id="subInput" placeholder="जस्तै: दाना, मजदुरी, उपकरण">
+
+  <button class="btn" onclick="addSubHead()">➕ उपशीर्षक थप्नुहोस्</button>
+
+  <div id="subList" class="small" style="margin-top:10px"></div>
+</div>
+
 <!-- ADD EXPENSE -->
 <div class="card">
   <h2>➕ खर्च विवरण</h2>
@@ -78,10 +96,10 @@ footer{
   </select>
 
   <label>उपशीर्षक</label>
-  <input id="subHead" placeholder="जस्तै: दाना, मजदुरी, उपकरण">
+  <select id="subHeadSelect"></select>
 
   <label>खर्चको नाम</label>
-  <input id="itemName" placeholder="जस्तै: दाना खरिद">
+  <input id="itemName">
 
   <label>इकाई</label>
   <input id="unit">
@@ -129,37 +147,83 @@ projectName.innerText = login.projectName || "-";
 /* ===== PRODUCTS ===== */
 const products = JSON.parse(localStorage.getItem("fb_products")) || [];
 
-/* ===== DATA ===== */
-let expenses = JSON.parse(localStorage.getItem("fb_expenses")) || [];
-let productCost = JSON.parse(localStorage.getItem("fb_product_cost")) || [];
-let editIndex = -1;
+/* ===== SUBHEADS ===== */
+let subHeads = JSON.parse(localStorage.getItem("fb_expense_subheads")) || {
+  "चालु": [],
+  "स्थिर": []
+};
+function saveSubHeads(){
+  localStorage.setItem("fb_expense_subheads", JSON.stringify(subHeads));
+  renderSubHeads();
+  renderSubDropdown();
+}
+function addSubHead(){
+  const t=subType.value;
+  const v=subInput.value.trim();
+  if(!v) return;
+  if(!subHeads[t].includes(v)){
+    subHeads[t].push(v);
+    saveSubHeads();
+  }
+  subInput.value="";
+}
+function delSubHead(t,i){
+  if(!confirm("उपशीर्षक हटाउने?")) return;
+  subHeads[t].splice(i,1);
+  saveSubHeads();
+}
+function renderSubHeads(){
+  const t=subType.value;
+  subList.innerHTML = subHeads[t].length
+    ? subHeads[t].map((s,i)=>`
+      <div>${s}
+        <button class="btn-red"
+          onclick="delSubHead('${t}',${i})">हटाउनुहोस्</button>
+      </div>`).join("")
+    : "अहिलेसम्म उपशीर्षक छैन।";
+}
+subType.onchange=renderSubHeads;
+renderSubHeads();
+
+/* ===== SUBHEAD DROPDOWN ===== */
+function renderSubDropdown(){
+  const t=expType.value;
+  subHeadSelect.innerHTML="";
+  (subHeads[t]||[]).forEach(s=>{
+    const o=document.createElement("option");
+    o.value=s;o.textContent=s;
+    subHeadSelect.appendChild(o);
+  });
+}
+expType.onchange=renderSubDropdown;
+renderSubDropdown();
 
 /* ===== PRODUCT CHECKLIST ===== */
 function renderProductChecks(selected=[]){
   productChecks.innerHTML="";
-  products.forEach((p,i)=>{
-    const id="p"+i;
-    const chk=document.createElement("div");
-    chk.innerHTML=`
+  products.forEach(p=>{
+    productChecks.innerHTML+=`
       <label>
         <input type="checkbox" value="${p.name}"
         ${selected.includes(p.name)?"checked":""}>
         ${p.name}
-      </label>
-    `;
-    productChecks.appendChild(chk);
+      </label><br>`;
   });
 }
 renderProductChecks();
 
-/* ===== ADD EXPENSE ===== */
+/* ===== EXPENSE DATA ===== */
+let expenses = JSON.parse(localStorage.getItem("fb_expenses")) || [];
+let productCost = JSON.parse(localStorage.getItem("fb_product_cost")) || [];
+let editIndex=-1;
+
 function addExpense(){
   const linked=[...productChecks.querySelectorAll("input:checked")]
     .map(c=>c.value);
 
   const e={
     type:expType.value,
-    sub:subHead.value.trim(),
+    sub:subHeadSelect.value,
     name:itemName.value.trim(),
     unit:unit.value.trim(),
     qty:+qty.value,
@@ -167,9 +231,8 @@ function addExpense(){
     products:linked,
     note:note.value.trim()
   };
-
   if(!e.sub||!e.name||!e.qty||!e.rate){
-    alert("उपशीर्षक, नाम, परिमाण र दर आवश्यक छन्");
+    alert("उपशीर्षक, नाम, परिमाण, दर आवश्यक");
     return;
   }
 
@@ -180,7 +243,6 @@ function addExpense(){
     expenses.push(e);
   }
 
-  // product cost map
   linked.forEach(p=>{
     productCost.push({
       product:p,
@@ -195,13 +257,11 @@ function addExpense(){
   render();
 }
 
-/* ===== RENDER ===== */
 function render(){
   if(!expenses.length){
-    listBox.innerHTML="अहिलेसम्म कुनै खर्च थपिएको छैन।";
+    listBox.innerHTML="अहिलेसम्म खर्च छैन।";
     return;
   }
-
   let html="<table><tr><th>प्रकार</th><th>उपशीर्षक</th><th>नाम</th><th>रकम</th><th>उत्पादन</th><th></th></tr>";
   expenses.forEach((e,i)=>{
     html+=`
@@ -215,18 +275,17 @@ function render(){
           <button class="btn" onclick="editExp(${i})">✏️</button>
           <button class="btn-red" onclick="delExp(${i})">🗑️</button>
         </td>
-      </tr>
-    `;
+      </tr>`;
   });
   html+="</table>";
   listBox.innerHTML=html;
 }
 
-/* ===== EDIT / DELETE ===== */
 function editExp(i){
   const e=expenses[i];
   expType.value=e.type;
-  subHead.value=e.sub;
+  renderSubDropdown();
+  subHeadSelect.value=e.sub;
   itemName.value=e.name;
   unit.value=e.unit;
   qty.value=e.qty;
@@ -236,16 +295,15 @@ function editExp(i){
   editIndex=i;
 }
 function delExp(i){
-  if(!confirm("यो खर्च हटाउने?"))return;
+  if(!confirm("खर्च हटाउने?")) return;
   expenses.splice(i,1);
   localStorage.setItem("fb_expenses", JSON.stringify(expenses));
   render();
 }
 
-/* ===== CLEAR ===== */
 function clearForm(){
-  subHead.value="";itemName.value="";
-  unit.value="";qty.value="";rate.value="";
+  itemName.value="";unit.value="";
+  qty.value="";rate.value="";
   note.value="";
   renderProductChecks();
 }
