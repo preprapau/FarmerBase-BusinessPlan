@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ne">
+<head>
+<meta charset="UTF-8">
+<title>Business Detail | FarmerBase BP Engine</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{font-family:system-ui;background:#f4f6f8;margin:0}
+header{
+  background:#2e7d32;color:#fff;
+  padding:14px 16px;
+  display:flex;justify-content:space-between;align-items:center
+}
+header h1{margin:0;font-size:18px}
+.container{
+  max-width:1000px;
+  margin:auto;
+  padding:16px;
+  padding-bottom:120px;
+}
+.card{
+  background:#fff;
+  border-radius:10px;
+  padding:16px;
+  margin-bottom:16px;
+}
+h2{margin-top:0}
+label{font-weight:600;display:block;margin-top:12px}
+input,textarea{
+  width:100%;
+  padding:8px;
+  margin-top:6px;
+  border:1px solid #ccc;
+  border-radius:6px;
+}
+textarea{min-height:100px}
+button{cursor:pointer}
+.btn{background:#2e7d32;color:#fff;border:none;padding:8px 12px;border-radius:6px}
+.btn-red{background:#c62828;color:#fff;border:none;padding:6px 10px;border-radius:6px}
+.small{font-size:13px;color:#555}
+
+.item{
+  border-bottom:1px solid #eee;
+  padding:10px 0;
+}
+.item h3{margin:0 0 6px 0}
+.nav{
+  display:flex;
+  justify-content:space-between;
+  margin:16px 0;
+}
+footer{
+  position:fixed;
+  left:0;right:0;bottom:0;
+  background:#f1f8f4;
+  border-top:1px solid #ccc;
+  padding:8px 12px;
+  display:flex;
+  justify-content:space-between;
+}
+</style>
+</head>
+
+<body>
+
+<!-- HEADER -->
+<header>
+  <h1 id="headerTitle">Business Detail</h1>
+  <button onclick="location.href='short-info.html'">🏠 Home</button>
+</header>
+
+<div class="container">
+
+<!-- TOP NAV -->
+<div class="nav">
+  <button onclick="location.href='existing-status.html'">⬅️ Existing Status</button>
+  <button onclick="location.href='production.html'">➡️ Next</button>
+</div>
+
+<!-- IDENTITY -->
+<div class="card">
+  <b>संस्थाको नाम:</b> <span id="bizName"></span><br>
+  <b>परियोजनाको नाम:</b> <span id="projectName"></span>
+</div>
+
+<!-- ADD FORM -->
+<div class="card">
+  <h2>➕ व्यवसायिक विवरण थप्नुहोस्</h2>
+
+  <label>विषय (शीर्षक)</label>
+  <input id="titleInput" placeholder="जस्तै: बजारको अवस्था">
+
+  <label>विवरण</label>
+  <textarea id="contentInput"
+    placeholder="बजार, योजना, भविष्य, रणनीति आदि विस्तृत रूपमा लेख्नुहोस्"></textarea>
+
+  <button class="btn" onclick="addItem()">थप्नुहोस्</button>
+</div>
+
+<!-- LIST -->
+<div class="card">
+  <h2>📄 Business Detail विवरण</h2>
+  <div id="listBox" class="small"></div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="nav">
+  <button onclick="location.href='existing-status.html'">⬅️ Existing Status</button>
+  <button onclick="location.href='production.html'">➡️ Next</button>
+</div>
+
+</div>
+
+<footer>
+  <span class="small">Business Detail</span>
+  <span class="small">FarmerBase BP Engine</span>
+</footer>
+
+<script>
+/* ===== IDENTITY ===== */
+const login = JSON.parse(localStorage.getItem("fb_login")) || {};
+bizName.innerText = login.businessName || "-";
+projectName.innerText = login.projectName || "-";
+
+/* ===== DATA ===== */
+let data = JSON.parse(localStorage.getItem("fb_business_detail")) || [];
+let editIndex = -1;
+
+function render(){
+  if(!data.length){
+    listBox.innerHTML = "अहिलेसम्म कुनै विवरण थपिएको छैन।";
+    return;
+  }
+  listBox.innerHTML = "";
+  data.forEach((d,i)=>{
+    const div = document.createElement("div");
+    div.className = "item";
+    div.innerHTML = `
+      <h3>${d.title}</h3>
+      <div>${d.content.replace(/\n/g,"<br>")}</div>
+      <br>
+      <button class="btn" onclick="editItem(${i})">✏️ सच्याउनुहोस्</button>
+      <button class="btn-red" onclick="deleteItem(${i})">🗑️ हटाउनुहोस्</button>
+    `;
+    listBox.appendChild(div);
+  });
+}
+
+function addItem(){
+  const t = titleInput.value.trim();
+  const c = contentInput.value.trim();
+  if(!t || !c){
+    alert("विषय र विवरण दुवै आवश्यक छन्");
+    return;
+  }
+
+  if(editIndex>-1){
+    data[editIndex]={title:t,content:c};
+    editIndex=-1;
+  }else{
+    data.push({title:t,content:c});
+  }
+
+  localStorage.setItem("fb_business_detail", JSON.stringify(data));
+  titleInput.value="";
+  contentInput.value="";
+  render();
+}
+
+function editItem(i){
+  titleInput.value=data[i].title;
+  contentInput.value=data[i].content;
+  editIndex=i;
+}
+
+function deleteItem(i){
+  if(!confirm("यो विवरण हटाउने?")) return;
+  data.splice(i,1);
+  localStorage.setItem("fb_business_detail", JSON.stringify(data));
+  render();
+}
+
+render();
+</script>
+
+</body>
+</html>
