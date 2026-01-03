@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="ne">
+<head>
+<meta charset="UTF-8">
+<title>Short Info | FarmerBase BP Engine</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{font-family:system-ui;background:#f4f6f8;margin:0}
+header{
+  background:#2e7d32;color:#fff;
+  padding:14px 16px;
+  display:flex;justify-content:space-between;align-items:center
+}
+header h1{margin:0;font-size:18px}
+.container{max-width:1000px;margin:auto;padding:16px;padding-bottom:90px}
+.card{
+  background:#fff;border-radius:10px;
+  padding:16px;margin-bottom:16px
+}
+h2{margin-top:0}
+label{font-weight:600;display:block;margin-top:12px}
+input,textarea,button{
+  width:100%;padding:8px;margin-top:6px;
+  border:1px solid #ccc;border-radius:6px
+}
+textarea{min-height:70px}
+button{cursor:pointer}
+.btn{background:#2e7d32;color:#fff;border:none}
+.btn-red{background:#c62828;color:#fff;border:none}
+.small{font-size:13px;color:#555}
+.list-item{border-bottom:1px solid #eee;padding:8px 0}
+footer{
+  position:fixed;left:0;right:0;bottom:0;
+  background:#f1f8f4;border-top:1px solid #ccc;
+  padding:8px 12px;display:flex;justify-content:space-between
+}
+.grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:12px
+}
+@media(max-width:700px){
+  .grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>FarmerBase BP Engine</h1>
+  <button onclick="location.href='index.html'">🏠 Home</button>
+</header>
+
+<div class="container">
+
+<!-- ================= IDENTITY ================= -->
+<div class="card">
+  <h2>📌 व्यवसाय / परियोजना परिचय</h2>
+  <div class="grid">
+    <div><b>संस्थाको नाम:</b><br><span id="bizName"></span></div>
+    <div><b>परियोजनाको नाम:</b><br><span id="projectName"></span></div>
+    <div><b>प्रोप्राइटर:</b><br><span id="ownerName"></span></div>
+  </div>
+  <button onclick="location.href='login.html'">✏️ सच्याउनुहोस्</button>
+</div>
+
+<!-- ================= INSTITUTION ================= -->
+<div class="card">
+  <h2>🏢 संस्थागत विवरण</h2>
+
+  <label>दर्ता भएको निकाय</label>
+  <input id="regOffice">
+
+  <label>दर्ता नं</label>
+  <input id="regNo">
+
+  <label>PAN नं</label>
+  <input id="panNo">
+
+  <label>अन्य संघ/संस्थासँग आवद्धता</label>
+  <textarea id="affiliation"></textarea>
+
+  <button class="btn" onclick="saveInstitution()">💾 सुरक्षित गर्नुहोस्</button>
+</div>
+
+<!-- ================= BUSINESS STATUS ================= -->
+<div class="card">
+  <h2>📂 Your Created Business Plans</h2>
+  <div id="bizStatus" class="small"></div>
+</div>
+
+<!-- ================= TOOLS ================= -->
+<div class="card">
+  <h2>📎 Documents & Tools</h2>
+  <button onclick="window.open('pdf-merge.html','_blank')">📎 PDF Merge</button>
+  <button onclick="location.href='create-letter.html'">📝 Create Letter</button>
+  <button onclick="location.href='cover.html'">📘 Proposal Cover</button>
+</div>
+
+<!-- ================= NAV ================= -->
+<div class="card">
+  <h2>🚀 प्रस्ताव बनाउने चरण</h2>
+  <div class="grid">
+    <button onclick="location.href='existing-status.html'">Existing Status</button>
+    <button onclick="location.href='business-detail.html'">Business Detail</button>
+    <button onclick="location.href='production.html'">Production</button>
+    <button onclick="location.href='expenses.html'">Expenses</button>
+    <button onclick="location.href='capital-source.html'">Capital Source</button>
+    <button onclick="location.href='income.html'">Income</button>
+    <button onclick="location.href='profit-loss.html'">Profit–Loss</button>
+  </div>
+</div>
+
+<!-- ================= SYSTEM ================= -->
+<div class="card">
+  <h2>🧪 System Check</h2>
+  <button class="btn" onclick="runSelfTest()">▶️ Run Self-Test</button>
+  <div id="testResult" class="small"></div>
+</div>
+
+<!-- ================= DELETE ================= -->
+<div class="card">
+  <h2>⚠️ व्यवस्थापन</h2>
+  <button class="btn-red" onclick="deleteBusiness()">🗑️ पूरा व्यवसाय हटाउनुहोस्</button>
+</div>
+
+</div>
+
+<footer>
+  <span class="small">Proposal Home</span>
+  <span class="small">FarmerBase BP Engine</span>
+</footer>
+
+<script>
+/* ===== LOGIN DATA ===== */
+const login = JSON.parse(localStorage.getItem("fb_login")) || {};
+bizName.innerText = login.businessName || "-";
+projectName.innerText = login.projectName || "-";
+ownerName.innerText = login.ownerName || "-";
+
+/* ===== INSTITUTION ===== */
+const inst = JSON.parse(localStorage.getItem("fb_institution")) || {};
+regOffice.value = inst.regOffice || "";
+regNo.value = inst.regNo || "";
+panNo.value = inst.panNo || "";
+affiliation.value = inst.affiliation || "";
+
+function saveInstitution(){
+  localStorage.setItem("fb_institution", JSON.stringify({
+    regOffice: regOffice.value,
+    regNo: regNo.value,
+    panNo: panNo.value,
+    affiliation: affiliation.value
+  }));
+  alert("संस्थागत विवरण सुरक्षित भयो");
+}
+
+/* ===== BUSINESS STATUS ===== */
+const hasData =
+  localStorage.getItem("fb_products") ||
+  localStorage.getItem("fb_expenses") ||
+  localStorage.getItem("fb_capital_source");
+
+bizStatus.innerText = hasData
+  ? "✔️ यस ब्राउजरमा व्यवसायिक योजना उपलब्ध छ।"
+  : "ℹ️ हालसम्म कुनै व्यवसायिक योजना सुरु गरिएको छैन।";
+
+/* ===== SELF TEST ===== */
+function runSelfTest(){
+  const res=[];
+  const has=k=>!!localStorage.getItem(k);
+  const ok=m=>"✅ "+m, no=m=>"❌ "+m;
+
+  has("fb_products")?res.push(ok("Production OK")):res.push(no("Production missing"));
+  has("fb_expenses")?res.push(ok("Expenses OK")):res.push(no("Expenses missing"));
+  has("fb_capital_source")?res.push(ok("Capital Source OK")):res.push(no("Capital Source missing"));
+  has("fb_incomes")?res.push(ok("Income OK")):res.push(no("Income missing"));
+  has("fb_institution")?res.push(ok("Institution OK")):res.push(no("Institution missing"));
+
+  testResult.innerHTML=res.join("<br>");
+}
+
+/* ===== DELETE BUSINESS ===== */
+function deleteBusiness(){
+  if(!confirm("सबै विवरण हटाइनेछन्। निश्चित हुनुहुन्छ?"))return;
+  Object.keys(localStorage).forEach(k=>{
+    if(k.startsWith("fb_")) localStorage.removeItem(k);
+  });
+  alert("व्यवसाय हटाइयो");
+  location.href="index.html";
+}
+</script>
+
+</body>
+</html>
+You sent
+<!DOCTYPE html>
+<html lang="ne">
+<head>
+<meta charset="UTF-8">
+<title>Existing Status | FarmerBase BP Engine</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{font-family:system-ui;background:#f4f6f8;margin:0}
+header{
+  background:#2e7d32;color:#fff;
+  padding:14px 16px;
+  display:flex;justify-content:space-between;align-items:center
+}
+header h1{margin:0;font-size:18px}
+.container{
+  max-width:1000px;
+  margin:auto;
+  padding:16px;
+  padding-bottom:120px;
+}
+.card{
+  background:#fff;
+  border-radius:10px;
+  padding:16px;
+  margin-bottom:16px;
+}
+h2{margin-top:0}
+label{font-weight:600;display:block;margin-top:12px}
+input,textarea{
+  width:100%;
+  padding:8px;
+  margin-top:6px;
+  border:1px solid #ccc;
+  border-radius:6px;
+}
+textarea{min-height:90px}
+button{cursor:pointer}
+.btn{background:#2e7d32;color:#fff;border:none;padding:8px 12px;border-radius:6px}
+.btn-red{background:#c62828;color:#fff;border:none;padding:6px 10px;border-radius:6px}
+.small{font-size:13px;color:#555}
+
+.item{
+  border-bottom:1px solid #eee;
+  padding:10px 0;
+}
+.item h3{margin:0 0 6px 0}
+.nav{
+  display:flex;
+  justify-content:space-between;
+  margin:16px 0;
+}
+footer{
+  position:fixed;
+  left:0;right:0;bottom:0;
+  background:#f1f8f4;
+  border-top:1px solid #ccc;
+  padding:8px 12px;
+  display:flex;
+  justify-content:space-between;
+}
+</style>
+</head>
+
+<body>
+
+<!-- HEADER -->
+<header>
+  <h1 id="headerTitle">Existing Status</h1>
+  <button onclick="location.href='short-info.html'">🏠 Home</button>
+</header>
+
+<div class="container">
+
+<!-- TOP NAV -->
+<div class="nav">
+  <button onclick="location.href='short-info.html'">⬅️ Short Info</button>
+  <button onclick="location.href='business-detail.html'">➡️ Next</button>
+</div>
+
+<!-- IDENTITY -->
+<div class="card">
+  <b>संस्थाको नाम:</b> <span id="bizName"></span><br>
+  <b>परियोजनाको नाम:</b> <span id="projectName"></span>
+</div>
+
+<!-- ADD FORM -->
+<div class="card">
+  <h2>➕ नयाँ शीर्षक थप्नुहोस्</h2>
+
+  <label>शीर्षक</label>
+  <input id="titleInput" placeholder="जस्तै: हालको व्यवसाय अवस्था">
+
+  <label>विवरण</label>
+  <textarea id="contentInput"
+    placeholder="यहाँ वर्तमान अवस्था, पूर्वाधार, अनुभव आदि लेख्नुहोस्"></textarea>
+
+  <button class="btn" onclick="addItem()">थप्नुहोस्</button>
+</div>
+
+<!-- LIST -->
+<div class="card">
+  <h2>📄 Existing Status विवरण</h2>
+  <div id="listBox" class="small"></div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="nav">
+  <button onclick="location.href='short-info.html'">⬅️ Short Info</button>
+  <button onclick="location.href='business-detail.html'">➡️ Next</button>
+</div>
+
+</div>
+
+<footer>
+  <span class="small">Existing Status</span>
+  <span class="small">FarmerBase BP Engine</span>
+</footer>
+
+<script>
+/* ===== IDENTITY ===== */
+const login = JSON.parse(localStorage.getItem("fb_login")) || {};
+bizName.innerText = login.businessName || "-";
+projectName.innerText = login.projectName || "-";
+
+/* ===== DATA ===== */
+let data = JSON.parse(localStorage.getItem("fb_existing_status")) || [];
+let editIndex = -1;
+
+function render(){
+  if(!data.length){
+    listBox.innerHTML = "अहिलेसम्म कुनै विवरण थपिएको छैन।";
+    return;
+  }
+  listBox.innerHTML = "";
+  data.forEach((d,i)=>{
+    const div = document.createElement("div");
+    div.className = "item";
+    div.innerHTML = `
+      <h3>${d.title}</h3>
+      <div>${d.content.replace(/\n/g,"<br>")}</div>
+      <br>
+      <button class="btn" onclick="editItem(${i})">✏️ सच्याउनुहोस्</button>
+      <button class="btn-red" onclick="deleteItem(${i})">🗑️ हटाउनुहोस्</button>
+    `;
+    listBox.appendChild(div);
+  });
+}
+
+function addItem(){
+  const t = titleInput.value.trim();
+  const c = contentInput.value.trim();
+  if(!t || !c){
+    alert("शीर्षक र विवरण दुवै आवश्यक छन्");
+    return;
+  }
+
+  if(editIndex>-1){
+    data[editIndex]={title:t,content:c};
+    editIndex=-1;
+  }else{
+    data.push({title:t,content:c});
+  }
+
+  localStorage.setItem("fb_existing_status", JSON.stringify(data));
+  titleInput.value="";
+  contentInput.value="";
+  render();
+}
+
+function editItem(i){
+  titleInput.value=data[i].title;
+  contentInput.value=data[i].content;
+  editIndex=i;
+}
+
+function deleteItem(i){
+  if(!confirm("यो विवरण हटाउने?")) return;
+  data.splice(i,1);
+  localStorage.setItem("fb_existing_status", JSON.stringify(data));
+  render();
+}
+
+render();
+</script>
+
+</body>
+</html>
