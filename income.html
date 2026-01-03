@@ -15,7 +15,7 @@ header h1{margin:0;font-size:18px}
 table{width:100%;border-collapse:collapse;margin-top:10px}
 th,td{border:1px solid #ccc;padding:6px;font-size:14px}
 th{background:#f1f8f4}
-input{width:80px;padding:4px}
+input{width:70px;padding:4px}
 .nav{display:flex;justify-content:space-between;margin:12px 0}
 .small{font-size:13px;color:#555}
 footer{
@@ -29,7 +29,7 @@ padding:8px 12px;display:flex;justify-content:space-between
 <body>
 
 <header>
-  <h1>Income (Auto)</h1>
+  <h1>उत्पादन अनुसार आम्दानी (Auto)</h1>
   <button onclick="location.href='short-info.html'">🏠 Home</button>
 </header>
 
@@ -41,7 +41,7 @@ padding:8px 12px;display:flex;justify-content:space-between
 </div>
 
 <div class="card">
-  <h2>📈 उत्पादन अनुसार आम्दानी</h2>
+  <h2>📈 Income Summary</h2>
   <div id="incomeBox"></div>
 </div>
 
@@ -53,9 +53,9 @@ padding:8px 12px;display:flex;justify-content:space-between
 </footer>
 
 <script>
-/* =============================
-   BUILD PRODUCT COST MAP
-   ============================= */
+/* =========================
+   PRODUCT-WISE COST MAP
+   ========================= */
 function getProductCostMap(){
   const list = JSON.parse(localStorage.getItem("fb_product_cost")) || [];
   let map = {};
@@ -65,9 +65,9 @@ function getProductCostMap(){
   return map;
 }
 
-/* =============================
-   RENDER INCOME TABLE
-   ============================= */
+/* =========================
+   RENDER INCOME (GROUPED)
+   ========================= */
 function renderIncome(){
   const costMap = getProductCostMap();
   const products = Object.keys(costMap);
@@ -119,17 +119,16 @@ function renderIncome(){
   incomeBox.innerHTML = html;
 }
 
-/* =============================
-   RECALCULATE PER PRODUCT
-   ============================= */
+/* =========================
+   RECALCULATE (PER PRODUCT)
+   ========================= */
 function recalc(product, pct){
   const map = getProductCostMap();
   const cost = map[product] || 0;
-  const income = cost + (cost * pct / 100);
+  const income = cost + (cost * Number(pct) / 100);
   document.getElementById("inc_"+product).innerText =
     income.toLocaleString();
 
-  // recompute grand total
   let sum = 0;
   Object.keys(map).forEach(p=>{
     const el = document.getElementById("inc_"+p);
