@@ -1,1 +1,130 @@
-hhh
+<!DOCTYPE html>
+<html lang="ne">
+<head>
+<meta charset="UTF-8">
+<title>Income | FarmerBase BP Engine</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{font-family:system-ui;background:#f4f6f8;margin:0}
+header{background:#2e7d32;color:#fff;padding:14px 16px;
+display:flex;justify-content:space-between;align-items:center}
+header h1{margin:0;font-size:18px}
+.container{max-width:1100px;margin:auto;padding:16px;padding-bottom:140px}
+.card{background:#fff;border-radius:10px;padding:16px;margin-bottom:16px}
+label{font-weight:600;display:block;margin-top:10px}
+input,select{width:100%;padding:8px;margin-top:6px;
+border:1px solid #ccc;border-radius:6px}
+button{cursor:pointer}
+.btn{background:#2e7d32;color:#fff;border:none;padding:8px 12px;border-radius:6px}
+.small{font-size:13px;color:#555}
+table{width:100%;border-collapse:collapse;margin-top:10px}
+th,td{border:1px solid #ccc;padding:6px;font-size:14px}
+th{background:#f1f8f4}
+.nav{display:flex;justify-content:space-between;margin:12px 0}
+footer{
+position:fixed;left:0;right:0;bottom:0;
+background:#f1f8f4;border-top:1px solid #ccc;
+padding:8px 12px;display:flex;justify-content:space-between
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>Income (Auto)</h1>
+  <button onclick="location.href='short-info.html'">🏠 Home</button>
+</header>
+
+<div class="container">
+
+<div class="nav">
+  <button onclick="location.href='capital-source.html'">⬅️ Capital</button>
+  <button onclick="location.href='profit-loss.html'">➡️ Profit / Loss</button>
+</div>
+
+<div class="card">
+<h2>📈 उत्पादन अनुसार आम्दानी (Auto)</h2>
+<div id="incomeBox"></div>
+</div>
+
+</div>
+
+<footer>
+<span class="small">Income</span>
+<span class="small">FarmerBase BP Engine</span>
+</footer>
+
+<script>
+/* ==========================
+   GET PRODUCT COST (FROM EXPENSES)
+   ========================== */
+function getProductCost(){
+  const productCost =
+    JSON.parse(localStorage.getItem("fb_product_cost")) || [];
+
+  let map = {};
+  productCost.forEach(p=>{
+    map[p.product] = (map[p.product]||0) + Number(p.amount);
+  });
+  return map;
+}
+
+/* ==========================
+   RENDER AUTO INCOME
+   ========================== */
+function renderIncome(){
+  const costMap = getProductCost();
+  const products = Object.keys(costMap);
+
+  if(!products.length){
+    incomeBox.innerHTML="अहिलेसम्म उत्पादन लागत छैन।";
+    return;
+  }
+
+  let html = `
+  <table>
+    <tr>
+      <th>उत्पादन</th>
+      <th>लागत (Auto)</th>
+      <th>नाफा %</th>
+      <th>आम्दानी (Auto)</th>
+    </tr>`;
+
+  products.forEach(p=>{
+    const cost = costMap[p];
+    html += `
+      <tr>
+        <td>${p}</td>
+        <td>${cost.toLocaleString()}</td>
+        <td>
+          <input type="number" value="20"
+            onchange="calcIncome('${p}', this.value)">
+        </td>
+        <td id="inc_${p}"></td>
+      </tr>`;
+  });
+
+  html += "</table>";
+  incomeBox.innerHTML = html;
+
+  products.forEach(p=>calcIncome(p,20));
+}
+
+/* ==========================
+   CALCULATE INCOME
+   ========================== */
+function calcIncome(product, profitPct){
+  const costMap = getProductCost();
+  const cost = costMap[product] || 0;
+  const income = cost + (cost * profitPct / 100);
+  document.getElementById("inc_"+product)
+    .innerText = income.toLocaleString();
+}
+
+renderIncome();
+</script>
+
+</body>
+</html>
