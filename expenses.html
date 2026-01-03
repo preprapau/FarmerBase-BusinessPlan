@@ -1,1 +1,229 @@
-svgfbgf
+<!DOCTYPE html>
+<html lang="ne">
+<head>
+  <meta charset="UTF-8">
+  <title>Expenses | FarmerBase BP Engine</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background: #fff;
+      padding: 20px;
+      min-height: 100vh;
+    }
+
+    h2 { margin-top: 0; }
+
+    label {
+      display: block;
+      margin-top: 12px;
+      font-weight: bold;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+
+    button {
+      margin-top: 15px;
+      padding: 12px;
+      font-size: 16px;
+      width: 100%;
+      background: #e74c3c;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #c0392b;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      font-size: 15px;
+    }
+
+    table th, table td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: left;
+    }
+
+    table th {
+      background: #f0f0f0;
+    }
+
+    .summary {
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 30px;
+    }
+
+    .nav a {
+      text-decoration: none;
+      font-size: 16px;
+      color: #2980b9;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <h2>खर्च विवरण (Expenses)</h2>
+
+  <!-- Expense Form -->
+  <label>खर्च शीर्षक</label>
+  <input type="text" id="expenseName" placeholder="जस्तै: दाना, औषधि">
+
+  <label>रकम (रु.)</label>
+  <input type="number" id="expenseAmount" placeholder="20000">
+
+  <label>पुँजिको प्रकार</label>
+  <select id="capitalType">
+    <option value="working">चालु पुँजि</option>
+    <option value="fixed">स्थिर पुँजि</option>
+  </select>
+
+  <button type="button" onclick="saveExpense()">
+    Save Expense
+  </button>
+
+  <!-- Expense Table -->
+  <table>
+    <thead>
+      <tr>
+        <th>खर्च</th>
+        <th>रकम (रु.)</th>
+        <th>पुँजि प्रकार</th>
+      </tr>
+    </thead>
+    <tbody id="expenseTable"></tbody>
+  </table>
+
+  <div class="summary" id="expenseSummary"></div>
+
+  <!-- Navigation -->
+  <div class="nav">
+    <a href="capital-source.html">⬅ Capital</a>
+    <a href="income.html">Income ➡</a>
+  </div>
+
+</div>
+
+<script>
+function getTotalCapital() {
+  return Number(localStorage.getItem("totalCapital")) || 0;
+}
+
+function saveExpense() {
+  const name = document.getElementById("expenseName").value.trim();
+  const amount = Number(document.getElementById("expenseAmount").value);
+  const capitalType = document.getElementById("capitalType").value;
+
+  if (!name || amount <= 0) {
+    alert("खर्च शीर्षक र सही रकम हाल्नुहोस्");
+    return;
+  }
+
+  let expenses = JSON.parse(localStorage.getItem("expenses")) || [];
+  expenses.push({ name, amount, capitalType });
+  localStorage.setItem("expenses", JSON.stringify(expenses));
+
+  // 🔑 CORE LOGIC: Capital consume by %
+  applyExpenseToCapital(amount);
+
+  document.getElementById("expenseName").value = "";
+  document.getElementById("expenseAmount").value = "";
+
+  loadExpenses();
+}
+
+function applyExpenseToCapital(expenseAmount) {
+  let capitalSources =
+    JSON.parse(localStorage.getItem("capitalSources")) || [];
+
+  const totalCapital = capitalSources.reduce(
+    (sum, c) => sum + c.amount, 0
+  );
+
+  if (totalCapital <= 0) return;
+
+  capitalSources = capitalSources.map(src => {
+    const ratio = src.amount / totalCapital;
+    const deduction = ratio * expenseAmount;
+    return {
+      ...src,
+      amount: Math.max(0, src.amount - deduction)
+    };
+  });
+
+  localStorage.setItem(
+    "capitalSources",
+    JSON.stringify(capitalSources)
+  );
+
+  // update totalCapital after expense
+  const newTotal = capitalSources.reduce(
+    (sum, c) => sum + c.amount, 0
+  );
+  localStorage.setItem("totalCapital", newTotal);
+}
+
+function loadExpenses() {
+  const expenses = JSON.parse(localStorage.getItem("expenses")) || [];
+  const tbody = document.getElementById("expenseTable");
+  tbody.innerHTML = "";
+
+  let total = 0;
+  let working = 0;
+  let fixed = 0;
+
+  expenses.forEach(e => {
+    total += e.amount;
+    if (e.capitalType === "working") working += e.amount;
+    if (e.capitalType === "fixed") fixed += e.amount;
+
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${e.name}</td>
+      <td>${e.amount.toLocaleString()}</td>
+      <td>${e.capitalType === "working" ? "चालु" : "स्थिर"}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById("expenseSummary").innerText =
+    "कुल खर्च: रु. " + total.toLocaleString() +
+    " | चालु: रु. " + working.toLocaleString() +
+    " | स्थिर: रु. " + fixed.toLocaleString();
+}
+
+window.onload = loadExpenses;
+</script>
+
+</body>
+</html>
