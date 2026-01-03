@@ -1,228 +1,228 @@
 <!DOCTYPE html>
 <html lang="ne">
 <head>
-  <meta charset="UTF-8">
-  <title>Expenses | FarmerBase BP Engine</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<title>Expenses | FarmerBase BP Engine</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f6f8;
-      margin: 0;
-      padding: 0;
-    }
-
-    .container {
-      max-width: 900px;
-      margin: auto;
-      background: #fff;
-      padding: 20px;
-      min-height: 100vh;
-    }
-
-    h2 { margin-top: 0; }
-
-    label {
-      display: block;
-      margin-top: 12px;
-      font-weight: bold;
-    }
-
-    input, select {
-      width: 100%;
-      padding: 10px;
-      margin-top: 6px;
-      font-size: 16px;
-      box-sizing: border-box;
-    }
-
-    button {
-      margin-top: 15px;
-      padding: 12px;
-      font-size: 16px;
-      width: 100%;
-      background: #e74c3c;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background: #c0392b;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-      font-size: 15px;
-    }
-
-    table th, table td {
-      border: 1px solid #ccc;
-      padding: 8px;
-      text-align: left;
-    }
-
-    table th {
-      background: #f0f0f0;
-    }
-
-    .summary {
-      margin-top: 15px;
-      font-weight: bold;
-    }
-
-    .nav {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 30px;
-    }
-
-    .nav a {
-      text-decoration: none;
-      font-size: 16px;
-      color: #2980b9;
-      font-weight: bold;
-    }
-  </style>
+<style>
+body{font-family:system-ui;background:#f4f6f8;margin:0}
+header{background:#2e7d32;color:#fff;padding:14px 16px;display:flex;justify-content:space-between;align-items:center}
+header h1{margin:0;font-size:18px}
+.container{max-width:1100px;margin:auto;padding:16px;padding-bottom:140px}
+.card{background:#fff;border-radius:10px;padding:16px;margin-bottom:16px}
+h2{margin-top:0}
+label{font-weight:600;display:block;margin-top:10px}
+input,select,textarea{width:100%;padding:8px;margin-top:6px;border:1px solid #ccc;border-radius:6px}
+textarea{min-height:60px}
+button{cursor:pointer}
+.btn{background:#2e7d32;color:#fff;border:none;padding:8px 12px;border-radius:6px}
+.btn-red{background:#c62828;color:#fff;border:none;padding:6px 10px;border-radius:6px}
+.small{font-size:13px;color:#555}
+.nav{display:flex;justify-content:space-between;margin:12px 0}
+table{width:100%;border-collapse:collapse;margin-top:10px}
+th,td{border:1px solid #ccc;padding:6px;font-size:14px}
+th{background:#f1f8f4}
+footer{position:fixed;left:0;right:0;bottom:0;background:#f1f8f4;border-top:1px solid #ccc;padding:8px 12px;display:flex;justify-content:space-between}
+</style>
 </head>
 
 <body>
 
+<header>
+  <h1>Expenses</h1>
+  <button onclick="location.href='short-info.html'">🏠 Home</button>
+</header>
+
 <div class="container">
 
-  <h2>खर्च विवरण (Expenses)</h2>
+<div class="nav">
+  <button onclick="location.href='production.html'">⬅️ Production</button>
+  <button onclick="location.href='capital-source.html'">➡️ Capital</button>
+</div>
 
-  <!-- Expense Form -->
-  <label>खर्च शीर्षक</label>
-  <input type="text" id="expenseName" placeholder="जस्तै: दाना, औषधि">
+<div class="card small">
+  <b>संस्थाको नाम:</b> <span id="bizName"></span><br>
+  <b>परियोजनाको नाम:</b> <span id="projectName"></span>
+</div>
 
-  <label>रकम (रु.)</label>
-  <input type="number" id="expenseAmount" placeholder="20000">
+<!-- SUBHEAD -->
+<div class="card">
+<h2>🗂️ खर्च उपशीर्षक</h2>
 
-  <label>पुँजिको प्रकार</label>
-  <select id="capitalType">
-    <option value="working">चालु पुँजि</option>
-    <option value="fixed">स्थिर पुँजि</option>
-  </select>
+<label>खर्चको प्रकार</label>
+<select id="subType">
+  <option value="चालु">चालु खर्च</option>
+  <option value="स्थिर">स्थिर खर्च</option>
+</select>
 
-  <button type="button" onclick="saveExpense()">
-    Save Expense
-  </button>
+<label>नयाँ उपशीर्षक</label>
+<input id="subInput">
 
-  <!-- Expense Table -->
-  <table>
-    <thead>
-      <tr>
-        <th>खर्च</th>
-        <th>रकम (रु.)</th>
-        <th>पुँजि प्रकार</th>
-      </tr>
-    </thead>
-    <tbody id="expenseTable"></tbody>
-  </table>
+<button class="btn" onclick="addSubHead()">➕ थप्नुहोस्</button>
+<div id="subList" class="small"></div>
+</div>
 
-  <div class="summary" id="expenseSummary"></div>
+<!-- EXPENSE FORM -->
+<div class="card">
+<h2>➕ खर्च विवरण</h2>
 
-  <!-- Navigation -->
-  <div class="nav">
-    <a href="capital-source.html">⬅ Capital</a>
-    <a href="income.html">Income ➡</a>
-  </div>
+<label>खर्चको प्रकार</label>
+<select id="expType">
+  <option value="चालु">चालु</option>
+  <option value="स्थिर">स्थिर</option>
+</select>
+
+<label>उपशीर्षक</label>
+<select id="subHeadSelect"></select>
+
+<label>खर्चको नाम</label>
+<input id="itemName">
+
+<label>इकाई</label>
+<input id="unit">
+
+<label>परिमाण</label>
+<input type="number" id="qty">
+
+<label>दर</label>
+<input type="number" id="rate">
+
+<label>कुन उत्पादनमा खर्च?</label>
+<div id="productChecks" class="small"></div>
+
+<label>कैफियत</label>
+<textarea id="note"></textarea>
+
+<button class="btn" onclick="addExpense()">💾 खर्च थप्नुहोस्</button>
+</div>
+
+<!-- LIST -->
+<div class="card">
+<h2>📄 खर्च सूची</h2>
+<div id="listBox"></div>
+</div>
 
 </div>
 
+<footer>
+<span class="small">Expenses</span>
+<span class="small">FarmerBase BP Engine</span>
+</footer>
+
 <script>
-function getTotalCapital() {
-  return Number(localStorage.getItem("totalCapital")) || 0;
+/* ===== IDENTITY ===== */
+const login=JSON.parse(localStorage.getItem("fb_login"))||{};
+bizName.innerText=login.businessName||"-";
+projectName.innerText=login.projectName||"-";
+
+/* ===== PRODUCTS ===== */
+const products=JSON.parse(localStorage.getItem("fb_products"))||[];
+
+/* ===== CAPITAL SOURCES (READ ONLY) ===== */
+const capitalSources=JSON.parse(localStorage.getItem("capitalSources"))||[];
+
+/* ===== SUBHEADS ===== */
+let subHeads=JSON.parse(localStorage.getItem("fb_expense_subheads"))||{"चालु":[],"स्थिर":[]};
+function saveSubHeads(){
+  localStorage.setItem("fb_expense_subheads",JSON.stringify(subHeads));
+  renderSubHeads();renderSubDropdown();
 }
-
-function saveExpense() {
-  const name = document.getElementById("expenseName").value.trim();
-  const amount = Number(document.getElementById("expenseAmount").value);
-  const capitalType = document.getElementById("capitalType").value;
-
-  if (!name || amount <= 0) {
-    alert("खर्च शीर्षक र सही रकम हाल्नुहोस्");
-    return;
-  }
-
-  let expenses = JSON.parse(localStorage.getItem("expenses")) || [];
-  expenses.push({ name, amount, capitalType });
-  localStorage.setItem("expenses", JSON.stringify(expenses));
-
-  // 🔑 CORE LOGIC: Capital consume by %
-  applyExpenseToCapital(amount);
-
-  document.getElementById("expenseName").value = "";
-  document.getElementById("expenseAmount").value = "";
-
-  loadExpenses();
+function addSubHead(){
+  const t=subType.value,v=subInput.value.trim();
+  if(!v||subHeads[t].includes(v))return;
+  subHeads[t].push(v);subInput.value="";saveSubHeads();
 }
+function renderSubHeads(){
+  const t=subType.value;
+  subList.innerHTML=subHeads[t].map((s,i)=>`
+    <div>${s}
+    <button class="btn-red" onclick="delSubHead('${t}',${i})">x</button></div>`).join("")||"उपशीर्षक छैन";
+}
+function delSubHead(t,i){subHeads[t].splice(i,1);saveSubHeads();}
+subType.onchange=renderSubHeads;renderSubHeads();
 
-function applyExpenseToCapital(expenseAmount) {
-  let capitalSources =
-    JSON.parse(localStorage.getItem("capitalSources")) || [];
+function renderSubDropdown(){
+  const t=expType.value;
+  subHeadSelect.innerHTML="";
+  (subHeads[t]||[]).forEach(s=>{
+    const o=document.createElement("option");
+    o.value=s;o.textContent=s;subHeadSelect.appendChild(o);
+  });
+}
+expType.onchange=renderSubDropdown;renderSubDropdown();
 
-  const totalCapital = capitalSources.reduce(
-    (sum, c) => sum + c.amount, 0
-  );
+/* ===== PRODUCT CHECKS ===== */
+function renderProductChecks(sel=[]){
+  productChecks.innerHTML="";
+  products.forEach(p=>{
+    productChecks.innerHTML+=`
+    <label><input type="checkbox" value="${p.name}"
+    ${sel.includes(p.name)?"checked":""}> ${p.name}</label><br>`;
+  });
+}
+renderProductChecks();
 
-  if (totalCapital <= 0) return;
+/* ===== DATA ===== */
+let expenses=JSON.parse(localStorage.getItem("fb_expenses"))||[];
+let productCost=JSON.parse(localStorage.getItem("fb_product_cost"))||[];
+let capitalUsage=JSON.parse(localStorage.getItem("fb_capital_usage"))||[];
 
-  capitalSources = capitalSources.map(src => {
-    const ratio = src.amount / totalCapital;
-    const deduction = ratio * expenseAmount;
-    return {
-      ...src,
-      amount: Math.max(0, src.amount - deduction)
-    };
+/* ===== ADD EXPENSE ===== */
+function addExpense(){
+  const linked=[...productChecks.querySelectorAll("input:checked")].map(c=>c.value);
+  const e={
+    type:expType.value,
+    sub:subHeadSelect.value,
+    name:itemName.value.trim(),
+    unit:unit.value.trim(),
+    qty:+qty.value,
+    rate:+rate.value,
+    products:linked,
+    note:note.value.trim()
+  };
+  if(!e.sub||!e.name||!e.qty||!e.rate){alert("सबै विवरण चाहिन्छ");return;}
+  expenses.push(e);
+
+  linked.forEach(p=>{
+    const amt=e.qty*e.rate;
+    productCost.push({product:p,amount:amt,type:e.type});
+
+    /* CAPITAL SOURCE % USAGE */
+    const totalCap=capitalSources.reduce((s,c)=>s+c.amount,0);
+    capitalSources.forEach(c=>{
+      capitalUsage.push({
+        source:c.source,
+        percent:((c.amount/totalCap)*100).toFixed(2),
+        product:p,
+        expense:e.sub,
+        capitalType:e.type,
+        amount:(amt*(c.amount/totalCap)).toFixed(2)
+      });
+    });
   });
 
-  localStorage.setItem(
-    "capitalSources",
-    JSON.stringify(capitalSources)
-  );
-
-  // update totalCapital after expense
-  const newTotal = capitalSources.reduce(
-    (sum, c) => sum + c.amount, 0
-  );
-  localStorage.setItem("totalCapital", newTotal);
+  localStorage.setItem("fb_expenses",JSON.stringify(expenses));
+  localStorage.setItem("fb_product_cost",JSON.stringify(productCost));
+  localStorage.setItem("fb_capital_usage",JSON.stringify(capitalUsage));
+  clearForm();render();
 }
 
-function loadExpenses() {
-  const expenses = JSON.parse(localStorage.getItem("expenses")) || [];
-  const tbody = document.getElementById("expenseTable");
-  tbody.innerHTML = "";
-
-  let total = 0;
-  let working = 0;
-  let fixed = 0;
-
-  expenses.forEach(e => {
-    total += e.amount;
-    if (e.capitalType === "working") working += e.amount;
-    if (e.capitalType === "fixed") fixed += e.amount;
-
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${e.name}</td>
-      <td>${e.amount.toLocaleString()}</td>
-      <td>${e.capitalType === "working" ? "चालु" : "स्थिर"}</td>
-    `;
-    tbody.appendChild(tr);
+/* ===== RENDER ===== */
+function render(){
+  if(!expenses.length){listBox.innerHTML="खर्च छैन";return;}
+  let h="<table><tr><th>प्रकार</th><th>उपशीर्षक</th><th>नाम</th><th>रकम</th><th>उत्पादन</th></tr>";
+  expenses.forEach(e=>{
+    h+=`<tr><td>${e.type}</td><td>${e.sub}</td><td>${e.name}</td>
+    <td>${e.qty*e.rate}</td><td>${e.products.join(",")}</td></tr>`;
   });
-
-  document.getElementById("expenseSummary").innerText =
-    "कुल खर्च: रु. " + total.toLocaleString() +
-    " | चालु: रु. " + working.toLocaleString() +
-    " | स्थिर: रु. " + fixed.toLocaleString();
+  listBox.innerHTML=h+"</table>";
 }
-
-window.onload = loadExpenses;
+function clearForm(){
+  itemName.value="";unit.value="";qty.value="";rate.value="";note.value="";
+  renderProductChecks();
+}
+render();
 </script>
 
 </body>
