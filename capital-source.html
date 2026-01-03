@@ -1,1 +1,161 @@
-;flmv;lfs
+<!DOCTYPE html>
+<html lang="ne">
+<head>
+<meta charset="UTF-8">
+<title>Capital Source | FarmerBase BP Engine</title>
+<style>
+body{font-family:Arial;background:#f5f7fa;margin:0}
+header{background:#1b5e20;color:#fff;padding:12px 20px;font-size:20px}
+.container{max-width:900px;margin:auto;padding:20px}
+.card{background:#fff;padding:15px;margin-bottom:20px;border-radius:6px}
+h2,h3{margin-top:0}
+input,select,button{padding:8px;margin:5px 0;width:100%}
+button{background:#2e7d32;color:#fff;border:none;border-radius:4px;cursor:pointer}
+table{width:100%;border-collapse:collapse}
+th,td{border:1px solid #ccc;padding:8px;text-align:left}
+th{background:#e8f5e9}
+</style>
+</head>
+
+<body>
+
+<header>💰 FarmerBase BP Engine – Capital Source</header>
+
+<div class="container">
+
+<!-- CAPITAL SUMMARY -->
+<div class="card">
+<h2>पुँजी आवश्यकता सारांश</h2>
+<p>चालु पुँजी: <b id="runCap">0</b></p>
+<p>स्थिर पुँजी: <b id="fixCap">0</b></p>
+<p>कुल पुँजी: <b id="totalCap">0</b></p>
+</div>
+
+<!-- ADD CAPITAL SOURCE -->
+<div class="card">
+<h3>➕ पुँजी स्रोत थप्नुहोस्</h3>
+
+<label>स्रोत प्रकार</label>
+<select id="sourceType">
+  <option value="स्वलगानी">स्वलगानी</option>
+  <option value="ऋण">ऋण</option>
+  <option value="अनुदान">अनुदान</option>
+</select>
+
+<label>स्रोत नाम</label>
+<input id="sourceName" placeholder="जस्तै: कृषि विकास बैंक">
+
+<label>कुन पुँजीका लागि?</label>
+<select id="capitalFor">
+  <option value="चालु">चालु</option>
+  <option value="स्थिर">स्थिर</option>
+  <option value="दुवै">दुवै</option>
+</select>
+
+<label>प्रतिशत (%)</label>
+<input type="number" id="percent" placeholder="जस्तै: 50">
+
+<button onclick="saveSource()">Save Source</button>
+</div>
+
+<!-- SOURCE LIST -->
+<div class="card">
+<h3>📋 पुँजी स्रोत सूची</h3>
+<table>
+<thead>
+<tr>
+<th>प्रकार</th>
+<th>नाम</th>
+<th>पुँजी</th>
+<th>%</th>
+<th>रकम</th>
+<th></th>
+</tr>
+</thead>
+<tbody id="sourceTable"></tbody>
+</table>
+</div>
+
+</div>
+
+<script>
+/* ===== LOAD EXPENSES → CAPITAL ===== */
+function loadCapitalSummary(){
+  const expenses = JSON.parse(localStorage.getItem("fb_expenses")) || [];
+  let run=0, fix=0;
+
+  expenses.forEach(e=>{
+    const amt = Number(e.total || e.amount || 0);
+    if(e.type==="चालु") run+=amt;
+    if(e.type==="स्थिर") fix+=amt;
+  });
+
+  document.getElementById("runCap").innerText = run;
+  document.getElementById("fixCap").innerText = fix;
+  document.getElementById("totalCap").innerText = run+fix;
+
+  return {run, fix, total: run+fix};
+}
+
+/* ===== SAVE SOURCE ===== */
+function saveSource(){
+  const type=document.getElementById("sourceType").value;
+  const name=document.getElementById("sourceName").value;
+  const forCap=document.getElementById("capitalFor").value;
+  const percent=Number(document.getElementById("percent").value);
+
+  if(!name || percent<=0){
+    alert("स्रोत नाम र प्रतिशत आवश्यक छ");
+    return;
+  }
+
+  const cap=loadCapitalSummary();
+  let amount=0;
+
+  if(forCap==="चालु") amount=cap.run*percent/100;
+  if(forCap==="स्थिर") amount=cap.fix*percent/100;
+  if(forCap==="दुवै") amount=cap.total*percent/100;
+
+  const data=JSON.parse(localStorage.getItem("fb_capital_sources"))||[];
+  data.push({type,name,forCap,percent,amount});
+  localStorage.setItem("fb_capital_sources",JSON.stringify(data));
+
+  document.getElementById("sourceName").value="";
+  document.getElementById("percent").value="";
+  renderSources();
+}
+
+/* ===== RENDER SOURCE TABLE ===== */
+function renderSources(){
+  const list=JSON.parse(localStorage.getItem("fb_capital_sources"))||[];
+  const tbody=document.getElementById("sourceTable");
+  tbody.innerHTML="";
+
+  list.forEach((s,i)=>{
+    const tr=document.createElement("tr");
+    tr.innerHTML=`
+      <td>${s.type}</td>
+      <td>${s.name}</td>
+      <td>${s.forCap}</td>
+      <td>${s.percent}%</td>
+      <td>${s.amount.toFixed(2)}</td>
+      <td><button onclick="delSource(${i})">❌</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function delSource(i){
+  const list=JSON.parse(localStorage.getItem("fb_capital_sources"))||[];
+  list.splice(i,1);
+  localStorage.setItem("fb_capital_sources",JSON.stringify(list));
+  renderSources();
+}
+
+/* INIT */
+loadCapitalSummary();
+renderSources();
+</script>
+
+</body>
+</html>
