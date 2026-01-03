@@ -1,1 +1,160 @@
-jhvjh
+<!DOCTYPE html>
+<html lang="ne">
+<head>
+<meta charset="UTF-8">
+<title>Capital Source | FarmerBase BP Engine</title>
+
+<style>
+body{font-family:Arial;background:#f5f7fa;padding:20px}
+h2,h3{margin-top:20px}
+input,select,button{padding:8px;margin:6px 0;width:100%}
+button{background:#2e7d32;color:#fff;border:none;cursor:pointer}
+button:hover{background:#256628}
+table{width:100%;border-collapse:collapse;margin-top:10px;background:#fff}
+th,td{border:1px solid #ccc;padding:8px;text-align:left}
+.summary{background:#fff;padding:15px;border-radius:6px}
+.warn{color:red;font-weight:bold}
+.box{background:#fff;padding:15px;border-radius:6px;margin-top:15px}
+</style>
+</head>
+
+<body>
+
+<h2>💰 Capital Source</h2>
+
+<div class="summary">
+  <h3>पुँजी आवश्यकता सारांश</h3>
+  चालु पुँजी: <b id="runCap">0</b><br>
+  स्थिर पुँजी: <b id="fixCap">0</b><br>
+  कुल पुँजी: <b id="totalCap">0</b>
+</div>
+
+<div class="box">
+  <h3>➕ पुँजी स्रोत थप्नुहोस्</h3>
+
+  <label>स्रोत प्रकार</label>
+  <select id="sourceType">
+    <option value="स्वलगानी">स्वलगानी</option>
+    <option value="ऋण">ऋण</option>
+    <option value="अनुदान">अनुदान</option>
+  </select>
+
+  <label>स्रोत नाम</label>
+  <input id="sourceName" placeholder="जस्तै: कृषि विकास बैंक">
+
+  <label>कुन पुँजीका लागि?</label>
+  <input type="checkbox" id="forRun"> चालु  
+  <input type="checkbox" id="forFix"> स्थिर
+
+  <label>प्रतिशत (%)</label>
+  <input id="percent" type="number" placeholder="जस्तै: 50">
+
+  <button onclick="saveCapital()">Save Source</button>
+
+  <p id="warn" class="warn"></p>
+</div>
+
+<div class="box">
+  <h3>📋 पुँजी स्रोत सूची</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>स्रोत</th>
+        <th>प्रकार</th>
+        <th>लागि</th>
+        <th>%</th>
+        <th>रकम</th>
+      </tr>
+    </thead>
+    <tbody id="capList"></tbody>
+  </table>
+</div>
+
+<script>
+/* ===== LOAD DATA ===== */
+let expenses = JSON.parse(localStorage.getItem("expenses")) || [];
+let capitalSources = JSON.parse(localStorage.getItem("capitalSources")) || [];
+
+/* ===== CAPITAL SUMMARY FROM EXPENSES ===== */
+function loadCapitalSummary(){
+  let run = 0, fix = 0;
+
+  expenses.forEach(e=>{
+    const amt = Number(e.amount || e.total || 0);
+    if(e.type === "चालु") run += amt;
+    if(e.type === "स्थिर") fix += amt;
+  });
+
+  runCap.innerText = run;
+  fixCap.innerText = fix;
+  totalCap.innerText = run + fix;
+
+  return {run, fix};
+}
+
+/* ===== SAVE CAPITAL SOURCE ===== */
+function saveCapital(){
+  const type = sourceType.value;
+  const name = sourceName.value.trim();
+  const percent = Number(document.getElementById("percent").value);
+  const runSel = forRun.checked;
+  const fixSel = forFix.checked;
+
+  if(!name || !percent || (!runSel && !fixSel)){
+    alert("सबै विवरण पूरा गर्नुहोस्");
+    return;
+  }
+
+  const cap = loadCapitalSummary();
+  let amount = 0;
+
+  if(runSel) amount += cap.run * (percent/100);
+  if(fixSel) amount += cap.fix * (percent/100);
+
+  capitalSources.push({
+    name,
+    type,
+    target: ${runSel?"चालु ":""}${fixSel?"स्थिर":""},
+    percent,
+    amount: Math.round(amount)
+  });
+
+  localStorage.setItem("capitalSources", JSON.stringify(capitalSources));
+
+  sourceName.value="";
+  percent.value="";
+  forRun.checked=false;
+  forFix.checked=false;
+
+  renderCapital();
+}
+
+/* ===== RENDER LIST ===== */
+function renderCapital(){
+  capList.innerHTML="";
+  let totalPercent = 0;
+
+  capitalSources.forEach(c=>{
+    totalPercent += c.percent;
+    capList.innerHTML += `
+      <tr>
+        <td>${c.name}</td>
+        <td>${c.type}</td>
+        <td>${c.target}</td>
+        <td>${c.percent}%</td>
+        <td>${c.amount}</td>
+      </tr>`;
+  });
+
+  warn.innerText = totalPercent !== 100 
+    ? "⚠ कुल प्रतिशत 100% पुगेको छैन" 
+    : "";
+}
+
+/* ===== INIT ===== */
+loadCapitalSummary();
+renderCapital();
+</script>
+
+</body>
+</html>
