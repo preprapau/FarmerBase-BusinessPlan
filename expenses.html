@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ne">
+<head>
+<meta charset="UTF-8">
+<title>Expenses | FarmerBase BP Engine</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{font-family:system-ui;background:#f4f6f8;margin:0}
+header{
+  background:#2e7d32;color:#fff;
+  padding:14px 16px;
+  display:flex;justify-content:space-between;align-items:center
+}
+header h1{margin:0;font-size:18px}
+.container{
+  max-width:1100px;margin:auto;
+  padding:16px;padding-bottom:140px
+}
+.card{
+  background:#fff;border-radius:10px;
+  padding:16px;margin-bottom:16px
+}
+h2{margin-top:0}
+label{font-weight:600;display:block;margin-top:10px}
+input,select,textarea{
+  width:100%;padding:8px;margin-top:6px;
+  border:1px solid #ccc;border-radius:6px
+}
+textarea{min-height:60px}
+button{cursor:pointer}
+.btn{background:#2e7d32;color:#fff;border:none;padding:8px 12px;border-radius:6px}
+.btn-red{background:#c62828;color:#fff;border:none;padding:6px 10px;border-radius:6px}
+.small{font-size:13px;color:#555}
+
+.nav{display:flex;justify-content:space-between;margin:12px 0}
+table{width:100%;border-collapse:collapse;margin-top:10px}
+th,td{border:1px solid #ccc;padding:6px;font-size:14px;text-align:left}
+th{background:#f1f8f4}
+
+footer{
+  position:fixed;left:0;right:0;bottom:0;
+  background:#f1f8f4;border-top:1px solid #ccc;
+  padding:8px 12px;display:flex;justify-content:space-between
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>Expenses</h1>
+  <button onclick="location.href='short-info.html'">🏠 Home</button>
+</header>
+
+<div class="container">
+
+<!-- TOP NAV -->
+<div class="nav">
+  <button onclick="location.href='production.html'">⬅️ Production</button>
+  <button onclick="location.href='capital-source.html'">➡️ Next</button>
+</div>
+
+<!-- IDENTITY -->
+<div class="card small">
+  <b>संस्थाको नाम:</b> <span id="bizName"></span><br>
+  <b>परियोजनाको नाम:</b> <span id="projectName"></span>
+</div>
+
+<!-- ADD EXPENSE -->
+<div class="card">
+  <h2>➕ खर्च विवरण</h2>
+
+  <label>खर्चको प्रकार</label>
+  <select id="expType">
+    <option value="चालु">चालु खर्च</option>
+    <option value="स्थिर">स्थिर खर्च</option>
+  </select>
+
+  <label>उपशीर्षक</label>
+  <input id="subHead" placeholder="जस्तै: दाना, मजदुरी, उपकरण">
+
+  <label>खर्चको नाम</label>
+  <input id="itemName" placeholder="जस्तै: दाना खरिद">
+
+  <label>इकाई</label>
+  <input id="unit">
+
+  <label>परिमाण</label>
+  <input type="number" id="qty">
+
+  <label>दर</label>
+  <input type="number" id="rate">
+
+  <label>कुन उत्पादनमा खर्च लाग्छ?</label>
+  <div id="productChecks" class="small"></div>
+
+  <label>कैफियत / न्यारेसन</label>
+  <textarea id="note"></textarea>
+
+  <button class="btn" onclick="addExpense()">💾 खर्च थप्नुहोस्</button>
+</div>
+
+<!-- LIST -->
+<div class="card">
+  <h2>📄 खर्च सूची</h2>
+  <div id="listBox"></div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="nav">
+  <button onclick="location.href='production.html'">⬅️ Production</button>
+  <button onclick="location.href='capital-source.html'">➡️ Next</button>
+</div>
+
+</div>
+
+<footer>
+  <span class="small">Expenses</span>
+  <span class="small">FarmerBase BP Engine</span>
+</footer>
+
+<script>
+/* ===== IDENTITY ===== */
+const login = JSON.parse(localStorage.getItem("fb_login")) || {};
+bizName.innerText = login.businessName || "-";
+projectName.innerText = login.projectName || "-";
+
+/* ===== PRODUCTS ===== */
+const products = JSON.parse(localStorage.getItem("fb_products")) || [];
+
+/* ===== DATA ===== */
+let expenses = JSON.parse(localStorage.getItem("fb_expenses")) || [];
+let productCost = JSON.parse(localStorage.getItem("fb_product_cost")) || [];
+let editIndex = -1;
+
+/* ===== PRODUCT CHECKLIST ===== */
+function renderProductChecks(selected=[]){
+  productChecks.innerHTML="";
+  products.forEach((p,i)=>{
+    const id="p"+i;
+    const chk=document.createElement("div");
+    chk.innerHTML=`
+      <label>
+        <input type="checkbox" value="${p.name}"
+        ${selected.includes(p.name)?"checked":""}>
+        ${p.name}
+      </label>
+    `;
+    productChecks.appendChild(chk);
+  });
+}
+renderProductChecks();
+
+/* ===== ADD EXPENSE ===== */
+function addExpense(){
+  const linked=[...productChecks.querySelectorAll("input:checked")]
+    .map(c=>c.value);
+
+  const e={
+    type:expType.value,
+    sub:subHead.value.trim(),
+    name:itemName.value.trim(),
+    unit:unit.value.trim(),
+    qty:+qty.value,
+    rate:+rate.value,
+    products:linked,
+    note:note.value.trim()
+  };
+
+  if(!e.sub||!e.name||!e.qty||!e.rate){
+    alert("उपशीर्षक, नाम, परिमाण र दर आवश्यक छन्");
+    return;
+  }
+
+  if(editIndex>-1){
+    expenses[editIndex]=e;
+    editIndex=-1;
+  }else{
+    expenses.push(e);
+  }
+
+  // product cost map
+  linked.forEach(p=>{
+    productCost.push({
+      product:p,
+      amount:e.qty*e.rate,
+      type:e.type
+    });
+  });
+
+  localStorage.setItem("fb_expenses", JSON.stringify(expenses));
+  localStorage.setItem("fb_product_cost", JSON.stringify(productCost));
+  clearForm();
+  render();
+}
+
+/* ===== RENDER ===== */
+function render(){
+  if(!expenses.length){
+    listBox.innerHTML="अहिलेसम्म कुनै खर्च थपिएको छैन।";
+    return;
+  }
+
+  let html="<table><tr><th>प्रकार</th><th>उपशीर्षक</th><th>नाम</th><th>रकम</th><th>उत्पादन</th><th></th></tr>";
+  expenses.forEach((e,i)=>{
+    html+=`
+      <tr>
+        <td>${e.type}</td>
+        <td>${e.sub}</td>
+        <td>${e.name}</td>
+        <td>${e.qty*e.rate}</td>
+        <td>${e.products.join(", ")||"सबै"}</td>
+        <td>
+          <button class="btn" onclick="editExp(${i})">✏️</button>
+          <button class="btn-red" onclick="delExp(${i})">🗑️</button>
+        </td>
+      </tr>
+    `;
+  });
+  html+="</table>";
+  listBox.innerHTML=html;
+}
+
+/* ===== EDIT / DELETE ===== */
+function editExp(i){
+  const e=expenses[i];
+  expType.value=e.type;
+  subHead.value=e.sub;
+  itemName.value=e.name;
+  unit.value=e.unit;
+  qty.value=e.qty;
+  rate.value=e.rate;
+  note.value=e.note;
+  renderProductChecks(e.products);
+  editIndex=i;
+}
+function delExp(i){
+  if(!confirm("यो खर्च हटाउने?"))return;
+  expenses.splice(i,1);
+  localStorage.setItem("fb_expenses", JSON.stringify(expenses));
+  render();
+}
+
+/* ===== CLEAR ===== */
+function clearForm(){
+  subHead.value="";itemName.value="";
+  unit.value="";qty.value="";rate.value="";
+  note.value="";
+  renderProductChecks();
+}
+
+render();
+</script>
+
+</body>
+</html>
