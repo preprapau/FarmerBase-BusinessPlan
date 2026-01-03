@@ -1,1 +1,215 @@
-mc nslj
+<!DOCTYPE html>
+<html lang="ne">
+<head>
+  <meta charset="UTF-8">
+  <title>Capital Source | FarmerBase BP Engine</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background: #ffffff;
+      padding: 20px;
+      min-height: 100vh;
+    }
+
+    h2 {
+      margin-top: 0;
+      color: #2c3e50;
+    }
+
+    label {
+      display: block;
+      margin-top: 12px;
+      font-weight: bold;
+    }
+
+    input[type="text"],
+    input[type="number"] {
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+
+    input[type="checkbox"] {
+      transform: scale(1.2);
+      margin-right: 6px;
+    }
+
+    button {
+      margin-top: 15px;
+      padding: 12px;
+      font-size: 16px;
+      width: 100%;
+      background: #27ae60;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #219150;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      font-size: 15px;
+    }
+
+    table th, table td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: left;
+    }
+
+    table th {
+      background: #f0f0f0;
+    }
+
+    .total {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 30px;
+    }
+
+    .nav a {
+      text-decoration: none;
+      font-size: 16px;
+      color: #2980b9;
+      font-weight: bold;
+    }
+
+    .nav a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <h2>पुँजिको स्रोत (Capital Source)</h2>
+
+  <!-- Capital Form -->
+  <label>स्रोतको नाम</label>
+  <input type="text" id="sourceName" placeholder="जस्तै: आफैंको लगानी / बैंक ऋण">
+
+  <label>रकम (रु.)</label>
+  <input type="number" id="capitalAmount" placeholder="500000">
+
+  <label style="margin-top:12px;">
+    <input type="checkbox" id="includeInIncome">
+    Income मा देखाउने (Cash Flow)
+  </label>
+
+  <button type="button" onclick="saveCapitalSource()">
+    Save Capital Source
+  </button>
+
+  <!-- Capital Table -->
+  <table>
+    <thead>
+      <tr>
+        <th>स्रोत</th>
+        <th>रकम (रु.)</th>
+        <th>%</th>
+      </tr>
+    </thead>
+    <tbody id="capitalTable"></tbody>
+  </table>
+
+  <div class="total" id="totalCapital">कुल पुँजि: रु. 0</div>
+
+  <!-- Navigation -->
+  <div class="nav">
+    <a href="expenses.html">⬅ Expenses</a>
+    <a href="income.html">Income ➡</a>
+  </div>
+
+</div>
+
+<script>
+function saveCapitalSource() {
+  const source = document.getElementById("sourceName").value.trim();
+  const amount = Number(document.getElementById("capitalAmount").value);
+  const includeInIncome = document.getElementById("includeInIncome").checked;
+
+  if (!source || amount <= 0) {
+    alert("स्रोत र सही रकम हाल्नुहोस्");
+    return;
+  }
+
+  let capitalSources =
+    JSON.parse(localStorage.getItem("capitalSources")) || [];
+
+  capitalSources.push({
+    source: source,
+    amount: amount,
+    includeInIncome: includeInIncome
+  });
+
+  localStorage.setItem(
+    "capitalSources",
+    JSON.stringify(capitalSources)
+  );
+
+  document.getElementById("sourceName").value = "";
+  document.getElementById("capitalAmount").value = "";
+  document.getElementById("includeInIncome").checked = false;
+
+  loadCapitalSources();
+}
+
+function loadCapitalSources() {
+  const data =
+    JSON.parse(localStorage.getItem("capitalSources")) || [];
+  const tbody = document.getElementById("capitalTable");
+  tbody.innerHTML = "";
+
+  let total = 0;
+  data.forEach(item => total += item.amount);
+
+  data.forEach(item => {
+    const percent = total
+      ? ((item.amount / total) * 100).toFixed(2)
+      : "0.00";
+
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${item.source}</td>
+      <td>${item.amount.toLocaleString()}</td>
+      <td>${percent}%</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById("totalCapital").innerText =
+    "कुल पुँजि: रु. " + total.toLocaleString();
+
+  /* 🔑 CRITICAL: system-wide total capital */
+  localStorage.setItem("totalCapital", total);
+}
+
+window.onload = loadCapitalSources;
+</script>
+
+</body>
+</html>
