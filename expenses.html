@@ -2,355 +2,287 @@
 <html lang="ne">
 <head>
 <meta charset="UTF-8">
-<title>Expenses | FarmerBase BP Engine</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Expenses</title>
 
 <style>
-body{font-family:system-ui;background:#f4f6f8;margin:0}
-header{
-  background:#2e7d32;color:#fff;
-  padding:14px 16px;
-  display:flex;justify-content:space-between;align-items:center
+/* ====== BASIC ====== */
+body {
+  font-family: Arial, sans-serif;
+  padding: 20px;
 }
-header h1{margin:0;font-size:18px}
-.container{
-  max-width:1100px;margin:auto;
-  padding:16px;padding-bottom:140px
-}
-.card{
-  background:#fff;border-radius:10px;
-  padding:16px;margin-bottom:16px
-}
-h2{margin-top:0}
-label{font-weight:600;display:block;margin-top:10px}
-input,select,textarea{
-  width:100%;padding:8px;margin-top:6px;
-  border:1px solid #ccc;border-radius:6px
-}
-textarea{min-height:60px}
-button{cursor:pointer}
-.btn{background:#2e7d32;color:#fff;border:none;padding:8px 12px;border-radius:6px}
-.btn-red{background:#c62828;color:#fff;border:none;padding:6px 10px;border-radius:6px}
-.small{font-size:13px;color:#555}
+h2 { margin: 0; }
 
-.nav{display:flex;justify-content:space-between;margin:12px 0}
-table{width:100%;border-collapse:collapse;margin-top:10px}
-th,td{border:1px solid #ccc;padding:6px;font-size:14px}
-th{background:#f1f8f4}
+/* ====== HEADER ====== */
+.bp-header {
+  border-bottom: 2px solid #e0e0e0;
+  margin-bottom: 15px;
+  padding-bottom: 8px;
+}
+.bp-sub {
+  font-size: 14px;
+  color: #555;
+}
 
-footer{
-  position:fixed;left:0;right:0;bottom:0;
-  background:#f1f8f4;border-top:1px solid #ccc;
-  padding:8px 12px;display:flex;justify-content:space-between
+/* ====== TABLE ====== */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+th, td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: center;
+}
+th {
+  background: #f3f3f3;
+}
+
+/* ====== ENTRY ROW ====== */
+.entry-row {
+  background: #fafafa;
+}
+.input {
+  width: 100%;
+  padding: 7px;
+  font-size: 14px;
+}
+.input:disabled {
+  background: #eee;
+}
+
+/* ====== MAPPING ====== */
+.map-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.map-arrow {
+  font-size: 18px;
+  color: #2e7d32;
+  font-weight: bold;
+}
+.percent {
+  width: 70px;
+}
+
+/* ====== BUTTONS ====== */
+.btn {
+  padding: 6px 14px;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 14px;
+  border: none;
+}
+.btn-save {
+  background: #2e7d32;
+  color: #fff;
+}
+.btn-edit {
+  background: #0277bd;
+  color: #fff;
+}
+.btn-del {
+  background: #c62828;
+  color: #fff;
+}
+
+/* ====== HINT ====== */
+.page-hint {
+  background: #f9fbe7;
+  padding: 8px;
+  font-size: 14px;
+  margin-bottom: 10px;
 }
 </style>
 </head>
 
 <body>
 
-<header>
-  <h1>Expenses</h1>
-  <button onclick="location.href='short-info.html'">🏠 Home</button>
-</header>
-
-<div class="container">
-
-<!-- TOP NAV -->
-<div class="nav">
-  <button onclick="location.href='production.html'">⬅️ Production</button>
-  <button onclick="location.href='capital-source.html'">➡️ Capital</button>
+<!-- ===== HEADER ===== -->
+<div class="bp-header">
+  <h2 id="businessName">बंगुर पालन व्यवसाय</h2>
+  <p class="bp-sub">Business Plan → खर्च विवरण (Expenses)</p>
 </div>
 
-<!-- IDENTITY -->
-<div class="card small">
-  <b>संस्थाको नाम:</b> <span id="bizName"></span><br>
-  <b>परियोजनाको नाम:</b> <span id="projectName"></span>
-</div>
+<p class="page-hint">
+  💡 यहाँ गरिएको खर्च स्वतः सम्बन्धित उत्पादनको लागतमा जोडिन्छ
+</p>
 
-<!-- SUBHEAD MANAGER -->
-<div class="card">
-  <h2>🗂️ खर्च उपशीर्षक व्यवस्थापन</h2>
+<!-- ===== ENTRY TABLE ===== -->
+<table>
+<thead>
+<tr>
+  <th>खर्च शीर्षक</th>
+  <th>प्रकार</th>
+  <th>रकम</th>
+  <th>आयु (वर्ष)</th>
+  <th colspan="2">कुन उत्पादनमा खर्च ?</th>
+  <th>Action</th>
+</tr>
+</thead>
 
-  <label>खर्चको प्रकार</label>
-  <select id="subType">
-    <option value="चालु">चालु खर्च</option>
-    <option value="स्थिर">स्थिर खर्च</option>
-  </select>
+<tbody class="entry-row">
+<tr>
+  <td><input class="input" id="title" placeholder="जस्तै: दाना खर्च"></td>
 
-  <label>नयाँ उपशीर्षक</label>
-  <input id="subInput" placeholder="जस्तै: दाना, मजदुरी, उपकरण">
+  <td>
+    <select class="input" id="type" onchange="toggleLife()">
+      <option value="variable">चालु</option>
+      <option value="fixed">स्थिर</option>
+    </select>
+  </td>
 
-  <button class="btn" onclick="addSubHead()">➕ उपशीर्षक थप्नुहोस्</button>
+  <td><input class="input" type="number" id="amount"></td>
 
-  <div id="subList" class="small" style="margin-top:10px"></div>
-</div>
+  <td>
+    <input class="input" type="number" id="life" placeholder="स्थिरमा मात्र">
+  </td>
 
-<!-- ADD / EDIT EXPENSE -->
-<div class="card">
-  <h2>➕ खर्च विवरण</h2>
+  <td colspan="2">
+    <div class="map-box">
+      <span class="map-arrow">→</span>
+      <select class="input" id="production">
+        <option value="PROD-01">बंगुर पालन</option>
+        <option value="PROD-02">बाख्रा पालन</option>
+      </select>
+      <input class="input percent" type="number" id="ratio" value="100">
+      %
+    </div>
+  </td>
 
-  <label>खर्चको प्रकार</label>
-  <select id="expType">
-    <option value="चालु">चालु खर्च</option>
-    <option value="स्थिर">स्थिर खर्च</option>
-  </select>
+  <td>
+    <button class="btn btn-save" onclick="saveExpense()">Save</button>
+  </td>
+</tr>
+</tbody>
+</table>
 
-  <label>उपशीर्षक</label>
-  <select id="subHeadSelect"></select>
-
-  <label>खर्चको नाम</label>
-  <input id="itemName">
-
-  <label>इकाई</label>
-  <input id="unit">
-
-  <label>परिमाण</label>
-  <input type="number" id="qty">
-
-  <label>दर</label>
-  <input type="number" id="rate">
-
-  <label>कुन उत्पादनमा खर्च गर्ने ?</label>
-  <div id="productChecks" class="small"></div>
-
-  <label>कैफियत / न्यारेसन</label>
-  <textarea id="note"></textarea>
-
-  <button class="btn" onclick="addExpense()">💾 Save Expense</button>
-</div>
-
-<!-- LIST -->
-<div class="card">
-  <h2>📄 खर्च सूची</h2>
-  <div id="listBox"></div>
-</div>
-
-<!-- BOTTOM NAV -->
-<div class="nav">
-  <button onclick="location.href='production.html'">⬅️ Production</button>
-  <button onclick="location.href='capital-source.html'">➡️ Capital</button>
-</div>
-
-</div>
-
-<footer>
-  <span class="small">Expenses</span>
-  <span class="small">FarmerBase BP Engine</span>
-</footer>
+<!-- ===== LIST TABLE ===== -->
+<table>
+<thead>
+<tr>
+  <th>#</th>
+  <th>खर्च</th>
+  <th>प्रकार</th>
+  <th>रकम</th>
+  <th>आयु</th>
+  <th>Mapping</th>
+  <th>Action</th>
+</tr>
+</thead>
+<tbody id="expenseList"></tbody>
+</table>
 
 <script>
-/* ========= IDENTITY ========= */
-const login = JSON.parse(localStorage.getItem("fb_login")) || {};
-bizName.innerText = login.businessName || "-";
-projectName.innerText = login.projectName || "-";
+/* ================= LOGIC (LOCKED) ================= */
 
-/* ========= PRODUCTS ========= */
-const products = JSON.parse(localStorage.getItem("fb_products")) || [];
+let expenses = [];
+let editId = null;
 
-/* ========= SUBHEADS ========= */
-let subHeads = JSON.parse(localStorage.getItem("fb_expense_subheads")) || {
-  "चालु": [],
-  "स्थिर": []
-};
-
-function saveSubHeads(){
-  localStorage.setItem("fb_expense_subheads", JSON.stringify(subHeads));
-  renderSubHeads();
-  renderSubDropdown();
+function toggleLife() {
+  const type = document.getElementById("type").value;
+  document.getElementById("life").disabled = (type === "variable");
 }
 
-function addSubHead(){
-  const t = subType.value;
-  const v = subInput.value.trim();
-  if(!v) return;
-  if(!subHeads[t].includes(v)){
-    subHeads[t].push(v);
-    saveSubHeads();
+function saveExpense() {
+  const title = titleEl().value;
+  const type = typeEl().value;
+  const amount = Number(amountEl().value);
+  const life = Number(lifeEl().value);
+  const prod = productionEl().value;
+  const ratio = Number(ratioEl().value) || 100;
+
+  if (!title || !amount) {
+    alert("खर्च शीर्षक र रकम अनिवार्य छ");
+    return;
   }
-  subInput.value="";
-}
 
-function delSubHead(t,i){
-  if(!confirm("उपशीर्षक हटाउने?")) return;
-  subHeads[t].splice(i,1);
-  saveSubHeads();
-}
-
-function renderSubHeads(){
-  const t=subType.value;
-  subList.innerHTML = subHeads[t].length
-    ? subHeads[t].map((s,i)=>`
-      <div>${s}
-        <button class="btn-red"
-          onclick="delSubHead('${t}',${i})">हटाउनुहोस्</button>
-      </div>`).join("")
-    : "अहिलेसम्म उपशीर्षक छैन।";
-}
-subType.onchange=renderSubHeads;
-renderSubHeads();
-
-/* ========= SUBHEAD DROPDOWN ========= */
-function renderSubDropdown(){
-  const t=expType.value;
-  subHeadSelect.innerHTML="";
-  (subHeads[t]||[]).forEach(s=>{
-    const o=document.createElement("option");
-    o.value=s;o.textContent=s;
-    subHeadSelect.appendChild(o);
-  });
-}
-expType.onchange=renderSubDropdown;
-renderSubDropdown();
-
-/* ========= PRODUCT CHECKS ========= */
-function renderProductChecks(selected=[]){
-  productChecks.innerHTML="";
-  products.forEach(p=>{
-    productChecks.innerHTML+=`
-      <label>
-        <input type="checkbox" value="${p.name}"
-        ${selected.includes(p.name)?"checked":""}>
-        ${p.name}
-      </label><br>`;
-  });
-}
-renderProductChecks();
-
-/* ========= EXPENSE DATA ========= */
-let expenses = JSON.parse(localStorage.getItem("fb_expenses")) || [];
-let editIndex = -1;
-
-/* ========= REBUILD PRODUCT COST (CORE FIX) ========= */
-function rebuildProductCost(){
-  let productCost = [];
-
-  expenses.forEach(e=>{
-    const total = e.qty * e.rate;
-    const count = e.products.length || 1;
-    const share = total / count;
-
-    e.products.forEach(p=>{
-      productCost.push({
-        product: p,
-        amount: share,
-        type: e.type
-      });
-    });
-  });
-
-  localStorage.setItem("fb_product_cost", JSON.stringify(productCost));
-}
-
-/* ========= ADD / EDIT ========= */
-function addExpense(){
-  const linked=[...productChecks.querySelectorAll("input:checked")]
-    .map(c=>c.value);
-
-  const e={
-    type:expType.value,
-    sub:subHeadSelect.value,
-    name:itemName.value.trim(),
-    unit:unit.value.trim(),
-    qty:+qty.value,
-    rate:+rate.value,
-    products:linked,
-    note:note.value.trim()
+  const data = {
+    id: editId || Date.now(),
+    title,
+    type,
+    amount,
+    asset_life: type === "fixed" ? life : null,
+    production_map: [
+      { production_id: prod, ratio }
+    ]
   };
 
-  if(!e.sub||!e.name||!e.qty||!e.rate){
-    alert("उपशीर्षक, नाम, परिमाण, दर आवश्यक");
-    return;
+  if (editId) {
+    expenses = expenses.map(e => e.id === editId ? data : e);
+    editId = null;
+  } else {
+    expenses.push(data);
   }
 
-  if(editIndex>-1){
-    expenses[editIndex]=e;
-    editIndex=-1;
-  }else{
-    expenses.push(e);
-  }
-
-  localStorage.setItem("fb_expenses", JSON.stringify(expenses));
-  rebuildProductCost();
   clearForm();
-  render();
+  renderExpenses();
 }
 
-/* ========= DELETE ========= */
-function delExp(i){
-  if(!confirm("खर्च हटाउने?")) return;
-  expenses.splice(i,1);
-  localStorage.setItem("fb_expenses", JSON.stringify(expenses));
-  rebuildProductCost();
-  render();
-}
+function renderExpenses() {
+  const tbody = document.getElementById("expenseList");
+  tbody.innerHTML = "";
 
-/* ========= RENDER LIST ========= */
-function render(){
-  if(!expenses.length){
-    listBox.innerHTML="अहिलेसम्म खर्च छैन।";
-    return;
-  }
-
-  let total=0, cur=0, fix=0;
-
-  let html="<table><tr><th>प्रकार</th><th>उपशीर्षक</th><th>नाम</th><th>रकम</th><th>उत्पादन</th><th></th></tr>";
-
-  expenses.forEach((e,i)=>{
-    const amt = e.qty * e.rate;
-    total += amt;
-    e.type==="चालु" ? cur+=amt : fix+=amt;
-
-    html+=`
+  expenses.forEach((e, i) => {
+    const m = e.production_map[0];
+    tbody.innerHTML += `
       <tr>
-        <td>${e.type}</td>
-        <td>${e.sub}</td>
-        <td>${e.name}</td>
-        <td>${amt.toLocaleString()}</td>
-        <td>${e.products.join(", ")||"-"}</td>
+        <td>${i + 1}</td>
+        <td>${e.title}</td>
+        <td>${e.type === "fixed" ? "स्थिर" : "चालु"}</td>
+        <td>${e.amount}</td>
+        <td>${e.asset_life || "-"}</td>
+        <td>→ ${m.production_id} (${m.ratio}%)</td>
         <td>
-          <button class="btn" onclick="editExp(${i})">✏️</button>
-          <button class="btn-red" onclick="delExp(${i})">🗑️</button>
+          <button class="btn btn-edit" onclick="editExpense(${e.id})">Edit</button>
+          <button class="btn btn-del" onclick="deleteExpense(${e.id})">Del</button>
         </td>
-      </tr>`;
+      </tr>
+    `;
   });
-
-  html+=`
-    <tr>
-      <th colspan="3">कुल खर्च</th>
-      <th colspan="3">रु. ${total.toLocaleString()}
-      (चालु: ${cur.toLocaleString()} | स्थिर: ${fix.toLocaleString()})</th>
-    </tr>
-  </table>`;
-
-  listBox.innerHTML=html;
 }
 
-/* ========= EDIT ========= */
-function editExp(i){
-  const e=expenses[i];
-  expType.value=e.type;
-  renderSubDropdown();
-  subHeadSelect.value=e.sub;
-  itemName.value=e.name;
-  unit.value=e.unit;
-  qty.value=e.qty;
-  rate.value=e.rate;
-  note.value=e.note;
-  renderProductChecks(e.products);
-  editIndex=i;
+function editExpense(id) {
+  const e = expenses.find(x => x.id === id);
+  if (!e) return;
+
+  titleEl().value = e.title;
+  typeEl().value = e.type;
+  amountEl().value = e.amount;
+  lifeEl().value = e.asset_life || "";
+  productionEl().value = e.production_map[0].production_id;
+  ratioEl().value = e.production_map[0].ratio;
+
+  toggleLife();
+  editId = id;
 }
 
-/* ========= CLEAR ========= */
-function clearForm(){
-  itemName.value="";
-  unit.value="";
-  qty.value="";
-  rate.value="";
-  note.value="";
-  renderProductChecks();
+function deleteExpense(id) {
+  if (!confirm("Delete गर्ने ?")) return;
+  expenses = expenses.filter(e => e.id !== id);
+  renderExpenses();
 }
 
-render();
+function clearForm() {
+  titleEl().value = "";
+  amountEl().value = "";
+  lifeEl().value = "";
+  ratioEl().value = 100;
+  typeEl().value = "variable";
+  toggleLife();
+}
+
+/* ===== helpers ===== */
+const titleEl = () => document.getElementById("title");
+const typeEl = () => document.getElementById("type");
+const amountEl = () => document.getElementById("amount");
+const lifeEl = () => document.getElementById("life");
+const productionEl = () => document.getElementById("production");
+const ratioEl = () => document.getElementById("ratio");
+
+toggleLife();
 </script>
 
 </body>
