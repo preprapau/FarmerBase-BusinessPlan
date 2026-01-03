@@ -1,48 +1,151 @@
 <!DOCTYPE html>
-<html>
+<html lang="ne">
 <head>
 <meta charset="UTF-8">
-<title>Capital Test</title>
+<title>Capital Source | FarmerBase BP Engine</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{font-family:system-ui;background:#f4f6f8;margin:0}
+header{background:#2e7d32;color:#fff;padding:14px 16px;
+display:flex;justify-content:space-between;align-items:center}
+header h1{margin:0;font-size:18px}
+.container{max-width:1100px;margin:auto;padding:16px;padding-bottom:140px}
+.card{background:#fff;border-radius:10px;padding:16px;margin-bottom:16px}
+label{font-weight:600;display:block;margin-top:10px}
+input{width:100%;padding:8px;margin-top:6px;border:1px solid #ccc;border-radius:6px}
+button{cursor:pointer}
+.btn{background:#2e7d32;color:#fff;border:none;padding:8px 12px;border-radius:6px}
+.btn-red{background:#c62828;color:#fff;border:none;padding:6px 10px;border-radius:6px}
+.small{font-size:13px;color:#555}
+table{width:100%;border-collapse:collapse;margin-top:10px}
+th,td{border:1px solid #ccc;padding:6px;font-size:14px}
+th{background:#f1f8f4}
+.nav{display:flex;justify-content:space-between;margin:12px 0}
+footer{position:fixed;left:0;right:0;bottom:0;background:#f1f8f4;
+border-top:1px solid #ccc;padding:8px 12px;display:flex;justify-content:space-between}
+</style>
 </head>
 
 <body>
 
-<h2>Capital Source TEST</h2>
+<header>
+  <h1>Capital Source</h1>
+  <button onclick="location.href='short-info.html'">🏠 Home</button>
+</header>
 
-<input id="capName" placeholder="Source name"><br><br>
-<input id="capAmount" type="number" placeholder="Amount"><br><br>
+<div class="container">
 
-<button type="button" onclick="addCapital()">Save Capital</button>
+<div class="nav">
+  <button onclick="location.href='expenses.html'">⬅️ Expenses</button>
+  <button onclick="location.href='income.html'">➡️ Income</button>
+</div>
 
-<hr>
-<div id="out"></div>
+<!-- FULL CAPITAL -->
+<div class="card">
+  <h2>💰 कुल पुँजि (Full Capital)</h2>
+
+  <label>कुल पुँजि रकम</label>
+  <input type="number" id="fullCapital" placeholder="जस्तै: 1000000">
+
+  <button class="btn" onclick="saveFullCapital()">💾 Save Full Capital</button>
+
+  <div id="fullCapitalView" class="small"></div>
+</div>
+
+<!-- CAPITAL SOURCES -->
+<div class="card">
+  <h2>📊 पुँजिको स्रोत (% मात्र)</h2>
+
+  <label>स्रोतको नाम</label>
+  <input id="srcName" placeholder="जस्तै: आफ्नै लगानी">
+
+  <label>प्रतिशत (%)</label>
+  <input type="number" id="srcPercent" placeholder="जस्तै: 60">
+
+  <button class="btn" onclick="addSource()">➕ स्रोत थप्नुहोस्</button>
+
+  <div id="srcList"></div>
+</div>
+
+</div>
+
+<footer>
+<span class="small">Capital Source</span>
+<span class="small">FarmerBase BP Engine</span>
+</footer>
 
 <script>
-console.log("SCRIPT LOADED");
-
-function addCapital(){
-  console.log("BUTTON CLICKED");
-
-  const name = document.getElementById("capName").value;
-  const amt  = Number(document.getElementById("capAmount").value);
-
-  console.log("DATA:", name, amt);
-
-  let caps = JSON.parse(localStorage.getItem("capitalSources")) || [];
-  caps.push({source:name, amount:amt});
-
-  localStorage.setItem("capitalSources", JSON.stringify(caps));
-
-  render();
+/* ===== FULL CAPITAL ===== */
+function saveFullCapital(){
+  const fc = Number(document.getElementById("fullCapital").value);
+  if(!fc || fc<=0){
+    alert("कुल पुँजि हाल्नुहोस्");
+    return;
+  }
+  localStorage.setItem("fb_full_capital", fc);
+  renderFullCapital();
 }
 
-function render(){
-  const caps = JSON.parse(localStorage.getItem("capitalSources")) || [];
-  let html = "<pre>"+JSON.stringify(caps,null,2)+"</pre>";
-  document.getElementById("out").innerHTML = html;
+function getFullCapital(){
+  return Number(localStorage.getItem("fb_full_capital")) || 0;
 }
 
-render();
+function renderFullCapital(){
+  const fc = getFullCapital();
+  fullCapitalView.innerText = fc
+    ? "Saved Full Capital: रु. " + fc.toLocaleString()
+    : "";
+}
+
+/* ===== CAPITAL SOURCES (% ONLY) ===== */
+let sources = JSON.parse(localStorage.getItem("fb_capital_sources")) || [];
+
+function addSource(){
+  const name = srcName.value.trim();
+  const pct  = Number(srcPercent.value);
+
+  if(!name || pct<=0){
+    alert("स्रोत र प्रतिशत आवश्यक");
+    return;
+  }
+
+  const totalPct = sources.reduce((s,x)=>s+x.percent,0) + pct;
+  if(totalPct > 100){
+    alert("कुल प्रतिशत 100% भन्दा बढी भयो");
+    return;
+  }
+
+  sources.push({ source:name, percent:pct });
+  localStorage.setItem("fb_capital_sources", JSON.stringify(sources));
+
+  srcName.value=""; srcPercent.value="";
+  renderSources();
+}
+
+function renderSources(){
+  const fc = getFullCapital();
+  if(!sources.length){
+    srcList.innerHTML="अहिलेसम्म स्रोत छैन।";
+    return;
+  }
+
+  let html="<table><tr><th>स्रोत</th><th>%</th><th>Calculated Amount</th></tr>";
+  sources.forEach(s=>{
+    const amt = fc ? (fc*s.percent/100) : 0;
+    html+=`
+      <tr>
+        <td>${s.source}</td>
+        <td>${s.percent}%</td>
+        <td>रु. ${amt.toLocaleString()}</td>
+      </tr>`;
+  });
+  html+="</table>";
+  srcList.innerHTML=html;
+}
+
+renderFullCapital();
+renderSources();
 </script>
 
 </body>
