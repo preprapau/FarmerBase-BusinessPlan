@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="ne">
+<head>
+<meta charset="UTF-8">
+<title>Income | FarmerBase BP Engine</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{font-family:system-ui;background:#f4f6f8;margin:0}
+header{
+  background:#2e7d32;color:#fff;
+  padding:14px 16px;
+  display:flex;justify-content:space-between;align-items:center
+}
+header h1{margin:0;font-size:18px}
+.container{
+  max-width:1100px;margin:auto;
+  padding:16px;padding-bottom:140px
+}
+.card{
+  background:#fff;border-radius:10px;
+  padding:16px;margin-bottom:16px
+}
+h2{margin-top:0}
+label{font-weight:600;display:block;margin-top:10px}
+input,select,button{
+  width:100%;padding:8px;margin-top:6px;
+  border:1px solid #ccc;border-radius:6px
+}
+button{cursor:pointer}
+.btn{background:#2e7d32;color:#fff;border:none}
+.btn-red{background:#c62828;color:#fff;border:none}
+.small{font-size:13px;color:#555}
+
+.nav{display:flex;justify-content:space-between;margin:12px 0}
+table{width:100%;border-collapse:collapse;margin-top:10px}
+th,td{border:1px solid #ccc;padding:6px;font-size:14px}
+th{background:#f1f8f4}
+
+footer{
+  position:fixed;left:0;right:0;bottom:0;
+  background:#f1f8f4;border-top:1px solid #ccc;
+  padding:8px 12px;display:flex;justify-content:space-between
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>Income</h1>
+  <button onclick="location.href='short-info.html'">🏠 Home</button>
+</header>
+
+<div class="container">
+
+<!-- TOP NAV -->
+<div class="nav">
+  <button onclick="location.href='capital-source.html'">⬅️ Capital Source</button>
+  <button onclick="location.href='profit-loss.html'">➡️ Next</button>
+</div>
+
+<!-- IDENTITY -->
+<div class="card small">
+  <b>संस्थाको नाम:</b> <span id="bizName"></span><br>
+  <b>परियोजनाको नाम:</b> <span id="projectName"></span>
+</div>
+
+<!-- ADD / EDIT INCOME -->
+<div class="card">
+  <h2>➕ आम्दानी विवरण (उत्पादन अनुसार)</h2>
+
+  <label>उत्पादन</label>
+  <select id="productSelect"></select>
+
+  <label>प्रति इकाई लागत (Auto)</label>
+  <input id="unitCost" disabled>
+
+  <label>नाफा %</label>
+  <input id="margin" type="number" placeholder="जस्तै: 20">
+
+  <label>वा बिक्री दर (प्रति इकाई)</label>
+  <input id="sellPrice" type="number" placeholder="जस्तै: 80">
+
+  <button class="btn" onclick="addIncome()">💾 आम्दानी थप्नुहोस्</button>
+</div>
+
+<!-- LIST -->
+<div class="card">
+  <h2>📄 आम्दानी सूची</h2>
+  <div id="listBox"></div>
+</div>
+
+<!-- SUMMARY -->
+<div class="card">
+  <h2>📊 आम्दानी सारांश</h2>
+  <div id="summary" class="small"></div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="nav">
+  <button onclick="location.href='capital-source.html'">⬅️ Capital Source</button>
+  <button onclick="location.href='profit-loss.html'">➡️ Next</button>
+</div>
+
+</div>
+
+<footer>
+  <span class="small">Income</span>
+  <span class="small">FarmerBase BP Engine</span>
+</footer>
+
+<script>
+/* ===== IDENTITY ===== */
+const login = JSON.parse(localStorage.getItem("fb_login")) || {};
+bizName.innerText = login.businessName || "-";
+projectName.innerText = login.projectName || "-";
+
+/* ===== DATA LOAD ===== */
+const products = JSON.parse(localStorage.getItem("fb_products")) || [];
+const productCost = JSON.parse(localStorage.getItem("fb_product_cost")) || [];
+let incomes = JSON.parse(localStorage.getItem("fb_incomes")) || [];
+let editIndex = -1;
+
+/* ===== PRODUCT DROPDOWN ===== */
+function renderProducts(){
+  productSelect.innerHTML="";
+  products.forEach(p=>{
+    const o=document.createElement("option");
+    o.value=p.name;
+    o.textContent=p.name;
+    productSelect.appendChild(o);
+  });
+}
+renderProducts();
+
+/* ===== COST CALC ===== */
+function calcUnitCost(prod){
+  const cost = productCost
+    .filter(c=>c.product===prod)
+    .reduce((s,c)=>s+c.amount,0);
+  const p = products.find(x=>x.name===prod);
+  return p ? (cost / p.qty) : 0;
+}
+
+productSelect.onchange=()=>{
+  unitCost.value = calcUnitCost(productSelect.value).toFixed(2);
+};
+productSelect.onchange();
+
+/* ===== ADD / EDIT ===== */
+function addIncome(){
+  const prod = productSelect.value;
+  const cost = +unitCost.value;
+  const qty = products.find(p=>p.name===prod)?.qty || 0;
+  let price = +sellPrice.value;
+
+  if(!price && margin.value){
+    price = cost + (cost * (+margin.value)/100);
+  }
+  if(!price){
+    alert("नाफा % वा बिक्री दर दिनुहोस्");
+    return;
+  }
+
+  const inc={
+    product:prod,
+    qty,
+    unitCost:cost,
+    sellPrice:price,
+    margin: margin.value || "",
+    total: qty * price
+  };
+
+  if(editIndex>-1){
+    incomes[editIndex]=inc;
+    editIndex=-1;
+  }else{
+    incomes.push(inc);
+  }
+
+  localStorage.setItem("fb_incomes", JSON.stringify(incomes));
+  clearForm();
+  render();
+}
+
+function clearForm(){
+  margin.value="";
+  sellPrice.value="";
+}
+
+/* ===== RENDER ===== */
+function render(){
+  if(!incomes.length){
+    listBox.innerHTML="अहिलेसम्म कुनै आम्दानी विवरण छैन।";
+    summary.innerHTML="";
+    return;
+  }
+
+  let html="<table><tr><th>उत्पादन</th><th>परिमाण</th><th>बिक्री दर</th><th>कुल आम्दानी</th><th></th></tr>";
+  let grand=0;
+  incomes.forEach((i,idx)=>{
+    grand+=i.total;
+    html+=`
+      <tr>
+        <td>${i.product}</td>
+        <td>${i.qty}</td>
+        <td>${i.sellPrice}</td>
+        <td>${i.total.toFixed(2)}</td>
+        <td>
+          <button class="btn" onclick="editInc(${idx})">✏️</button>
+          <button class="btn-red" onclick="delInc(${idx})">🗑️</button>
+        </td>
+      </tr>
+    `;
+  });
+  html+="</table>";
+  listBox.innerHTML=html;
+
+  summary.innerHTML=`कुल आम्दानी: <b>${grand.toFixed(2)}</b>`;
+}
+
+/* ===== EDIT / DELETE ===== */
+function editInc(i){
+  const x=incomes[i];
+  productSelect.value=x.product;
+  unitCost.value=x.unitCost;
+  sellPrice.value=x.sellPrice;
+  margin.value=x.margin;
+  editIndex=i;
+}
+function delInc(i){
+  if(!confirm("यो आम्दानी हटाउने?"))return;
+  incomes.splice(i,1);
+  localStorage.setItem("fb_incomes", JSON.stringify(incomes));
+  render();
+}
+
+render();
+</script>
+
+</body>
+</html>
