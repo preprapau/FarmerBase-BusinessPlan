@@ -1,149 +1,48 @@
 <!DOCTYPE html>
-<html lang="ne">
+<html>
 <head>
 <meta charset="UTF-8">
-<title>Capital Source | FarmerBase BP Engine</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<style>
-body{font-family:system-ui;background:#f4f6f8;margin:0}
-header{background:#2e7d32;color:#fff;padding:14px 16px;
-display:flex;justify-content:space-between;align-items:center}
-header h1{margin:0;font-size:18px}
-.container{max-width:1100px;margin:auto;padding:16px;padding-bottom:140px}
-.card{background:#fff;border-radius:10px;padding:16px;margin-bottom:16px}
-label{font-weight:600;display:block;margin-top:10px}
-input{width:100%;padding:8px;margin-top:6px;border:1px solid #ccc;border-radius:6px}
-button{cursor:pointer}
-.btn{background:#2e7d32;color:#fff;border:none;padding:8px 12px;border-radius:6px}
-.btn-red{background:#c62828;color:#fff;border:none;padding:6px 10px;border-radius:6px}
-.small{font-size:13px;color:#555}
-.nav{display:flex;justify-content:space-between;margin:12px 0}
-table{width:100%;border-collapse:collapse;margin-top:10px}
-th,td{border:1px solid #ccc;padding:6px;font-size:14px}
-th{background:#f1f8f4}
-footer{position:fixed;left:0;right:0;bottom:0;background:#f1f8f4;
-border-top:1px solid #ccc;padding:8px 12px;display:flex;justify-content:space-between}
-</style>
+<title>Capital Test</title>
 </head>
 
 <body>
 
-<header>
-  <h1>Capital Source</h1>
-  <button onclick="location.href='short-info.html'">🏠 Home</button>
-</header>
+<h2>Capital Source TEST</h2>
 
-<div class="container">
+<input id="capName" placeholder="Source name"><br><br>
+<input id="capAmount" type="number" placeholder="Amount"><br><br>
 
-<div class="nav">
-  <button onclick="location.href='expenses.html'">⬅️ Expenses</button>
-  <button onclick="location.href='income.html'">➡️ Income</button>
-</div>
+<button type="button" onclick="addCapital()">Save Capital</button>
 
-<!-- ADD CAPITAL -->
-<div class="card">
-<h2>➕ पुँजिको स्रोत</h2>
-
-<label>स्रोतको नाम</label>
-<input id="capName" placeholder="जस्तै: आफ्नै लगानी, बैंक ऋण">
-
-<label>रकम</label>
-<input type="number" id="capAmount">
-
-<button class="btn" onclick="addCapital()">💾 पुँजि थप्नुहोस्</button>
-</div>
-
-<!-- CAPITAL LIST -->
-<div class="card">
-<h2>📄 पुँजि स्रोत सूची</h2>
-<div id="capList"></div>
-</div>
-
-<!-- CAPITAL USAGE -->
-<div class="card">
-<h2>📊 पुँजि प्रयोग (Expenses बाट)</h2>
-<div id="usageBox" class="small"></div>
-</div>
-
-</div>
-
-<footer>
-<span class="small">Capital</span>
-<span class="small">FarmerBase BP Engine</span>
-</footer>
+<hr>
+<div id="out"></div>
 
 <script>
-/* ===== CAPITAL SOURCES ===== */
-let capitalSources = JSON.parse(localStorage.getItem("capitalSources")) || [];
-let capitalUsage  = JSON.parse(localStorage.getItem("fb_capital_usage")) || [];
+console.log("SCRIPT LOADED");
 
-/* ===== ADD CAPITAL ===== */
 function addCapital(){
-  const name = capName.value.trim();
-  const amt  = +capAmount.value;
-  if(!name || !amt){ alert("स्रोत र रकम चाहिन्छ"); return; }
+  console.log("BUTTON CLICKED");
 
-  capitalSources.push({ source:name, amount:amt });
-  localStorage.setItem("capitalSources", JSON.stringify(capitalSources));
-  capName.value=""; capAmount.value="";
-  renderCapital();
+  const name = document.getElementById("capName").value;
+  const amt  = Number(document.getElementById("capAmount").value);
+
+  console.log("DATA:", name, amt);
+
+  let caps = JSON.parse(localStorage.getItem("capitalSources")) || [];
+  caps.push({source:name, amount:amt});
+
+  localStorage.setItem("capitalSources", JSON.stringify(caps));
+
+  render();
 }
 
-/* ===== RENDER CAPITAL ===== */
-function renderCapital(){
-  if(!capitalSources.length){
-    capList.innerHTML="पुँजि स्रोत छैन।";
-    return;
-  }
-
-  const total = capitalSources.reduce((s,c)=>s+c.amount,0);
-
-  let html="<table><tr><th>स्रोत</th><th>रकम</th><th>%</th></tr>";
-  capitalSources.forEach(c=>{
-    html+=`<tr>
-      <td>${c.source}</td>
-      <td>${c.amount}</td>
-      <td>${((c.amount/total)*100).toFixed(2)}%</td>
-    </tr>`;
-  });
-  html+=`<tr><th>कुल</th><th>${total}</th><th>100%</th></tr></table>`;
-  capList.innerHTML=html;
-
-  renderUsage(total);
+function render(){
+  const caps = JSON.parse(localStorage.getItem("capitalSources")) || [];
+  let html = "<pre>"+JSON.stringify(caps,null,2)+"</pre>";
+  document.getElementById("out").innerHTML = html;
 }
 
-/* ===== CAPITAL USAGE (FROM EXPENSES) ===== */
-function renderUsage(totalCap){
-  if(!capitalUsage.length){
-    usageBox.innerHTML="अहिलेसम्म पुँजि प्रयोग भएको छैन।";
-    return;
-  }
-
-  let sumWorking=0, sumFixed=0;
-  let bySource={};
-
-  capitalUsage.forEach(u=>{
-    if(u.capitalType==="चालु") sumWorking+=+u.amount;
-    else sumFixed+=+u.amount;
-
-    bySource[u.source]=(bySource[u.source]||0)+(+u.amount);
-  });
-
-  let html=`
-    <b>चालु पुँजि प्रयोग:</b> ${sumWorking}<br>
-    <b>स्थिर पुँजि प्रयोग:</b> ${sumFixed}<br><br>
-    <b>स्रोत अनुसार प्रयोग:</b><br>
-  `;
-
-  Object.keys(bySource).forEach(s=>{
-    html+=`${s}: ${bySource[s]}<br>`;
-  });
-
-  usageBox.innerHTML=html;
-}
-
-renderCapital();
+render();
 </script>
 
 </body>
