@@ -1,154 +1,152 @@
 <!DOCTYPE html>
 <html lang="ne">
 <head>
-  <meta charset="UTF-8" />
-  <title>Capital Source | FarmerBase BP Engine</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-
-  <style>
-    body{font-family:Arial, sans-serif;background:#f6f8f9;margin:0}
-    header{background:#1b5e20;color:#fff;padding:12px 16px;font-size:18px}
-    main{padding:16px;max-width:900px;margin:auto}
-    h2{margin-top:24px}
-    .box{background:#fff;padding:16px;border-radius:6px;margin-bottom:20px}
-    label{display:block;margin-top:10px}
-    input,select{width:100%;padding:8px;margin-top:4px}
-    button{margin-top:12px;padding:10px 14px;background:#2e7d32;color:#fff;border:none;border-radius:4px;cursor:pointer}
-    table{width:100%;border-collapse:collapse;margin-top:10px}
-    th,td{border:1px solid #ccc;padding:8px;text-align:left}
-    .nav{display:flex;justify-content:space-between;margin-top:30px}
-  </style>
+<meta charset="UTF-8">
+<title>Capital Source | FarmerBase BP Engine</title>
+<style>
+body{font-family:Arial;background:#f6f7fb;padding:20px}
+h2{margin-top:0}
+.card{background:#fff;padding:20px;border-radius:8px;margin-bottom:20px}
+input,select{width:100%;padding:8px;margin:5px 0}
+button{padding:8px 14px;background:#2e7d32;color:#fff;border:none;border-radius:5px;cursor:pointer}
+table{width:100%;border-collapse:collapse;margin-top:10px}
+th,td{border:1px solid #ccc;padding:8px;text-align:center}
+.warn{color:red;font-weight:bold}
+</style>
 </head>
 
 <body>
-<header>FarmerBase BP Engine – Capital Source</header>
 
-<main>
+<h2>💰 Capital Source</h2>
 
-  <!-- SUMMARY -->
-  <div class="box">
-    <h2>💰 पुँजी आवश्यकता सारांश</h2>
-    <p>चालु पुँजी: <strong id="runCap">0</strong></p>
-    <p>स्थिर पुँजी: <strong id="fixCap">0</strong></p>
-    <p>कुल पुँजी: <strong id="totalCap">0</strong></p>
-  </div>
+<!-- SUMMARY -->
+<div class="card">
+  <b>पुँजी आवश्यकता सारांश</b><br>
+  चालु पुँजी: <span id="runCap">0</span><br>
+  स्थिर पुँजी: <span id="fixCap">0</span><br>
+  कुल पुँजी: <span id="totalCap">0</span>
+</div>
 
-  <!-- ADD SOURCE -->
-  <div class="box">
-    <h2>➕ पुँजी स्रोत थप्नुहोस्</h2>
+<!-- ADD SOURCE -->
+<div class="card">
+  <h3>➕ पुँजी स्रोत थप्नुहोस्</h3>
 
-    <label>स्रोत प्रकार</label>
-    <select id="srcType">
-      <option value="स्वलगानी">स्वलगानी</option>
-      <option value="ऋण">ऋण</option>
-      <option value="अनुदान">अनुदान</option>
-    </select>
+  <label>स्रोत प्रकार</label>
+  <select id="srcType">
+    <option>स्वलगानी</option>
+    <option>बैंक ऋण</option>
+    <option>अनुदान</option>
+    <option>सहकारी</option>
+    <option>अन्य</option>
+  </select>
 
-    <label>स्रोत नाम</label>
-    <input id="srcName" placeholder="जस्तै: कृषि विकास बैंक"/>
+  <label>स्रोत नाम</label>
+  <input id="srcName" placeholder="जस्तै: कृषि विकास बैंक">
 
-    <label>कुन पुँजीका लागि?</label>
-    <select id="capType">
-      <option value="चालु">चालु</option>
-      <option value="स्थिर">स्थिर</option>
-    </select>
+  <label>कुन पुँजीका लागि?</label>
+  <input type="checkbox" id="capRun"> चालु
+  <input type="checkbox" id="capFix"> स्थिर
 
-    <label>रकम</label>
-    <input id="amount" type="number" placeholder="रकम"/>
+  <label>प्रतिशत (%)</label>
+  <input type="number" id="percent" placeholder="जस्तै: 50">
 
-    <button onclick="addSource()">Save Source</button>
-  </div>
+  <button onclick="addSource()">Save Source</button>
+</div>
 
-  <!-- LIST -->
-  <div class="box">
-    <h2>📋 पुँजी स्रोत सूची</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>प्रकार</th>
-          <th>नाम</th>
-          <th>पुँजी</th>
-          <th>रकम</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody id="srcList"></tbody>
-    </table>
-  </div>
-
-  <!-- NAV -->
-  <div class="nav">
-    <button onclick="location.href='expenses.html'">⬅ Expenses</button>
-    <button onclick="location.href='income.html'">Income ➡</button>
-  </div>
-
-</main>
+<!-- LIST -->
+<div class="card">
+  <h3>📋 पुँजी स्रोत सूची</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>स्रोत</th>
+        <th>पुँजी प्रकार</th>
+        <th>%</th>
+        <th>रकम</th>
+        <th>❌</th>
+      </tr>
+    </thead>
+    <tbody id="list"></tbody>
+  </table>
+  <div id="warn" class="warn"></div>
+</div>
 
 <script>
-/* ========= LOAD EXPENSE TOTALS ========= */
-function loadCapitalNeed(){
-  const expenses = JSON.parse(localStorage.getItem("fb_expenses")) || [];
-  let run = 0, fix = 0;
+/* LOAD EXPENSE TOTALS */
+const expenses = JSON.parse(localStorage.getItem("fb_expenses")) || [];
+let run=0, fix=0;
+expenses.forEach(e=>{
+  if(e.type==="चालु") run+=e.total;
+  if(e.type==="स्थिर") fix+=e.total;
+});
+runCap.innerText=run;
+fixCap.innerText=fix;
+totalCap.innerText=run+fix;
 
-  expenses.forEach(e=>{
-    const amt = (Number(e.qty)||0) * (Number(e.rate)||0);
-    if(e.type==="चालु") run += amt;
-    if(e.type==="स्थिर") fix += amt;
-  });
-
-  document.getElementById("runCap").innerText = run;
-  document.getElementById("fixCap").innerText = fix;
-  document.getElementById("totalCap").innerText = run + fix;
-}
-
-/* ========= CAPITAL SOURCE ========= */
+/* ADD SOURCE */
 function addSource(){
-  const data = JSON.parse(localStorage.getItem("fb_capital_sources")) || [];
-
-  const obj = {
-    srcType: srcType.value,
-    srcName: srcName.value,
-    capType: capType.value,
-    amount: Number(amount.value)
-  };
-
-  if(!obj.srcName || !obj.amount){
-    alert("सबै विवरण भर्नुहोस्");
+  const p = Number(percent.value);
+  if(!p || p<=0 || p>100){
+    alert("सही प्रतिशत हाल्नुहोस्");
     return;
   }
 
-  data.push(obj);
-  localStorage.setItem("fb_capital_sources", JSON.stringify(data));
-  renderSources();
+  let data = JSON.parse(localStorage.getItem("fb_capital_sources")) || [];
+
+  if(capRun.checked){
+    data.push({
+      src:srcName.value,
+      type:"चालु",
+      percent:p,
+      amount:Math.round(run*p/100)
+    });
+  }
+  if(capFix.checked){
+    data.push({
+      src:srcName.value,
+      type:"स्थिर",
+      percent:p,
+      amount:Math.round(fix*p/100)
+    });
+  }
+
+  localStorage.setItem("fb_capital_sources",JSON.stringify(data));
+  render();
 }
 
-function deleteSource(i){
+/* RENDER LIST */
+function render(){
   const data = JSON.parse(localStorage.getItem("fb_capital_sources")) || [];
-  data.splice(i,1);
-  localStorage.setItem("fb_capital_sources", JSON.stringify(data));
-  renderSources();
-}
-
-function renderSources(){
-  const data = JSON.parse(localStorage.getItem("fb_capital_sources")) || [];
-  const tbody = document.getElementById("srcList");
-  tbody.innerHTML="";
+  list.innerHTML="";
+  let pr=0,pf=0;
 
   data.forEach((d,i)=>{
-    tbody.innerHTML += `
+    if(d.type==="चालु") pr+=d.percent;
+    if(d.type==="स्थिर") pf+=d.percent;
+
+    list.innerHTML+=`
       <tr>
-        <td>${d.srcType}</td>
-        <td>${d.srcName}</td>
-        <td>${d.capType}</td>
+        <td>${d.src}</td>
+        <td>${d.type}</td>
+        <td>${d.percent}%</td>
         <td>${d.amount}</td>
-        <td><button onclick="deleteSource(${i})">❌</button></td>
+        <td><button onclick="del(${i})">X</button></td>
       </tr>`;
   });
+
+  warn.innerText="";
+  if(pr!==100) warn.innerText+="⚠️ चालु पुँजी 100% छैन | ";
+  if(pf!==100) warn.innerText+="⚠️ स्थिर पुँजी 100% छैन";
 }
 
-/* INIT */
-loadCapitalNeed();
-renderSources();
+function del(i){
+  let d=JSON.parse(localStorage.getItem("fb_capital_sources"));
+  d.splice(i,1);
+  localStorage.setItem("fb_capital_sources",JSON.stringify(d));
+  render();
+}
+
+render();
 </script>
 
 </body>
